@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 layout: home
 title: Living Book Engine v2
@@ -149,3 +150,8 @@ Living Book Engine v2は、AI技術とKindle Direct Publishing（KDP）を統合
 </style>
 
 <!-- Last Updated: 2025-06-29 04:29:00 JST -->
+=======
+# Getting Started
+
+This is a VitePress site.
+>>>>>>> 693cf09286965f3f9347f49edf38e6f938d716bd

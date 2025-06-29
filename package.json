@@ -1,18 +1,19 @@
 {
-  "name": "living-book-kdp-automation",
+  "name": "living-book-engine-v2",
   "version": "1.0.0",
-  "description": "Living Book Engine v2 × KDP自動化システム",
+  "description": "Living Book Engine v2 × KDP自動化システム - Community-Driven Publishing Platform",
   "main": "content-generation-pipeline.js",
   "scripts": {
     "dev": "vitepress dev docs",
     "build": "vitepress build docs",
     "preview": "vitepress preview docs",
-    "generate-daily-book": "node content-generation-pipeline.js",
-    "convert-to-kdp": "python3 markdown-to-kdp-converter.py",
+    "generate-daily-book": "node simple-book-generator.js",
+    "convert-to-kdp": "python3 quick-kdp-converter.py",
     "full-automation": "npm run generate-daily-book && npm run convert-to-kdp",
     "setup": "npm install && pip3 install -r requirements.txt",
     "lint": "eslint . --ext .js,.ts,.vue",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "echo \"Test suite not yet implemented\" && exit 1"
   },
   "keywords": [
     "vitepress",
@@ -21,12 +22,14 @@
     "ai",
     "publishing",
     "ebook",
-    "markdown"
+    "markdown",
+    "community",
+    "collaboration"
   ],
-  "author": "AI Automation System",
+  "author": "Claude AI + GEMINI AI",
   "license": "MIT",
   "dependencies": {
-    "vitepress": "^1.0.0",
+    "vitepress": "^1.2.3",
     "@anthropic-ai/sdk": "^0.17.0",
     "openai": "^4.0.0",
     "markdown-it": "^14.0.0",

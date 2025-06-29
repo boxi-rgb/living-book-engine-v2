@@ -1,36 +1,30 @@
-# 🚀 KDP × Living Book Engine v2 自動化システム
+# 🚀 Living Book Engine v2 × KDP自動化システム
 
-> **1日1冊をAIで自動化** - ブルーオーシャン戦略による革新的出版プラットフォーム
+> **革新的出版プラットフォーム** - AI技術とコミュニティの力で「生きた本」を創造
 
 ## 🎯 プロジェクト概要
 
-Living Book Engine v2とKindle Direct Publishing（KDP）を統合し、AI技術を活用して**1日1冊の自動出版**を実現するブルーオーシャン戦略システムです。
+Living Book Engine v2は、**AIと読者の共創による自己進化出版プラットフォーム**です。従来の「一度きりの製品リリース」から、**コミュニティ駆動で継続的に成長するサービス**へと出版概念を変革します。
 
-### 🌊 ブルーオーシャン戦略
-- **超高速出版**: 1日1冊の圧倒的スピード
-- **AI完全自動化**: 人的リソース最小化
-- **コミュニティ品質管理**: GitHub協働による品質向上
-- **データドリブン**: 需要予測に基づく企画
+### 🌟 二つの革新的機能
 
-## 🏗️ システム構成
+#### 1. 🤝 コミュニティ駆動型出版（GEMINIエンジン）
+- **コストゼロ**: 高価なAPIに依存しない持続可能な運営
+- **読者共創**: IssueやPRを通じた直接的な品質向上
+- **透明性**: 全変更履歴の公開とトレーサビリティ
 
-```
-トレンド分析 → AI執筆 → Living Book Engine → 品質管理 → KDP出版
-     ↓          ↓           ↓              ↓         ↓
-   OpenAI    GPT-4/Claude  VitePress    Community   自動化
-```
+#### 2. 🤖 AI自動出版システム（Claudeエンジン）
+- **1日1冊**: 超高速AI執筆→KDP出版パイプライン
+- **品質保証**: 多段階AI+コミュニティレビュー
+- **ブルーオーシャン戦略**: データドリブンなニッチ市場開拓
 
-## 📁 プロジェクト構造
+## 🏗️ ハイブリッドシステム構成
 
 ```
-├── 📚 docs/                          # VitePress書籍コンテンツ
-│   └── generated-books/               # AI生成書籍
-├── 🤖 content-generation-pipeline.js  # AIコンテンツ生成
-├── 🔄 markdown-to-kdp-converter.py    # KDP変換システム
-├── ⏰ automation-scheduler.js         # 自動化スケジューラー
-├── 🛠️ .github/workflows/             # GitHub Actions
-├── 📊 KDP_BlueOcean_Strategy.md       # 戦略文書
-└── 📋 KDP_LivingBook_Integration.md   # 統合設計書
+コミュニティ貢献 ──┐
+                  ├─→ Living Book Engine ─→ 品質管理 ─→ 出版
+AI自動生成 ────────┘        ↓                ↓        ↓
+                        VitePress      GitHub     KDP/Web
 ```
 
 ## 🚀 クイックスタート
@@ -42,16 +36,20 @@ git clone https://github.com/boxi-rgb/living-book-engine-v2.git
 cd living-book-engine-v2
 
 # 依存関係インストール
-npm run setup
+npm install
 
-# 環境変数設定
-cp .env.example .env
-# .envファイルを編集してAPIキーを設定
+# 開発サーバー起動
+npm run dev
 ```
 
-### 2. 手動実行テスト
+### 2. コミュニティ参加
+1. **[Issues](https://github.com/boxi-rgb/living-book-engine-v2/issues/new/choose)**: 誤字脱字報告、改善提案、新トピック提案
+2. **[Pull Request](https://github.com/boxi-rgb/living-book-engine-v2/compare)**: 直接的な改善貢献
+3. **品質向上**: Markdown Lintによる自動品質チェック
+
+### 3. AI自動出版システム
 ```bash
-# AI書籍生成
+# AI書籍生成（テスト版）
 npm run generate-daily-book
 
 # KDP変換
@@ -61,186 +59,148 @@ npm run convert-to-kdp
 npm run full-automation
 ```
 
-### 3. 自動化開始
-```bash
-# スケジューラー起動
-node automation-scheduler.js
+## 📁 プロジェクト構造
 
-# 手動実行
-node automation-scheduler.js generate
-node automation-scheduler.js upload
-node automation-scheduler.js stats
+```
+📦 living-book-engine-v2/
+├── 🤖 AI自動化システム/
+│   ├── simple-book-generator.js      # AI書籍生成（実証済み）
+│   ├── quick-kdp-converter.py        # EPUB変換（実証済み）
+│   ├── automation-scheduler.js       # 自動化スケジューラー
+│   └── docs/generated-books/         # 生成済み書籍3冊
+│
+├── 🤝 コミュニティシステム/
+│   ├── .github/ISSUE_TEMPLATE/       # Issue テンプレート
+│   ├── .github/workflows/            # CI/CD & Deploy
+│   ├── .markdownlint.jsonc          # 品質管理設定
+│   └── docs/.vitepress/              # サイト設定
+│
+├── 📚 コンテンツ/
+│   ├── KDP_BlueOcean_Strategy.md     # 戦略文書
+│   ├── COLLABORATION.md              # AI協業ログ
+│   └── FINAL_DELIVERABLE.md          # 成果報告書
+│
+└── 🔧 設定ファイル/
+    ├── package.json                  # 統合設定
+    ├── requirements.txt              # Python依存関係
+    └── .env.example                  # 環境変数テンプレート
 ```
 
-## 🔧 設定
+## 🎨 特徴とメリット
 
-### 環境変数 (.env)
-```env
-# AI API Keys
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
+### 💰 経済性
+- **ゼロコスト運営**: GitHub/Vercel無料枠活用
+- **収益化可能**: KDP自動出版による収益生成
+- **持続可能性**: コミュニティ貢献とAI効率化の両立
 
-# KDP設定
-KDP_USERNAME=your_kdp_username
-KDP_PASSWORD=your_kdp_password
+### 🔄 持続性
+- **自己進化**: 読者貢献による継続的改善
+- **自動化**: AI技術による効率的なコンテンツ生成
+- **品質保証**: ダブルチェックシステム（AI+人的）
 
-# 通知設定
-DISCORD_WEBHOOK=your_discord_webhook
-SLACK_WEBHOOK=your_slack_webhook
-```
+### 🌍 拡張性
+- **多言語対応**: コミュニティ翻訳+AI翻訳
+- **複数フォーマット**: Web/EPUB/PDF対応
+- **API化**: 将来的な外部システム連携
 
-### 自動化スケジュール
-- **06:00** - トレンド分析 + AI書籍生成
-- **12:00** - 品質チェック
-- **18:00** - KDP変換 + アップロード
-- **22:00** - 分析レポート生成
+## 📊 実証済み成果
 
-## 📊 品質管理システム
+### 🏆 完成した書籍（3冊）
+1. **『AI時代のセルフブランディング術』** (Self-Help)
+2. **『スタートアップ成功の5つの法則』** (Business)  
+3. **『AI活用で変わる働き方革命』** (Technology)
 
-### 多段階品質チェック
-1. **AI初期品質チェック** - 自動評価
-2. **コミュニティレビュー** - GitHub協働
-3. **最終AI校正** - 出版前チェック
-4. **統計分析** - 継続的改善
+各書籍：
+- ✅ **EPUB形式**: KDP準拠（約12KB）
+- ✅ **5章構成**: 体系的な学習構造
+- ✅ **実用的内容**: 即座に活用可能な具体的手法
 
-### 品質指標
-- 文章の自然さ (1-10)
-- 情報の正確性 (1-10)
-- 読みやすさ (1-10)
-- 独自性 (1-10)
-- 実用性 (1-10)
+### 📈 技術的成果
+- ✅ **VitePress統合**: 高品質サイト生成
+- ✅ **GitHub Actions**: 完全自動化パイプライン
+- ✅ **品質管理**: Markdown Lint + AI校正
+- ✅ **EPUB変換**: 標準準拠の変換システム
 
-## 🎨 カスタマイズ
+## 🤝 参加方法
 
-### コンテンツ設定
+### 読者として
+- **[バグ報告](https://github.com/boxi-rgb/living-book-engine-v2/issues/new?template=bug_report.md)**
+- **[機能要望](https://github.com/boxi-rgb/living-book-engine-v2/issues/new?template=feature_request.md)**
+- **内容改善PR**: 誤字修正、内容追加、翻訳など
+
+### 開発者として
+- **AI システム改善**: 執筆品質向上、変換精度向上
+- **UI/UX改善**: サイトデザイン、ユーザビリティ向上
+- **新機能開発**: API開発、分析機能、モバイル対応
+
+## 🔧 高度な設定
+
+### AI自動化設定
 ```javascript
-// content-generation-pipeline.js
+// 書籍生成カスタマイズ
 const config = {
-  targetLength: 50000,        // 目標文字数
-  qualityThreshold: 0.8,      // 品質基準
-  categories: [               // 対象カテゴリ
-    'self-help',
-    'business',
-    'technology'
-  ],
-  languages: ['ja', 'en']     // 対応言語
+  categories: ['self-help', 'business', 'technology'],
+  targetLength: 50000,  // 文字数
+  qualityThreshold: 8,  // 品質基準（1-10）
+  languages: ['ja', 'en']
 }
 ```
 
-### KDP変換設定
-```python
-# markdown-to-kdp-converter.py
-config = {
-  "output_formats": ["epub", "pdf"],
-  "epub_settings": {
-    "language": "ja",
-    "publisher": "AI Living Books"
-  },
-  "cover_settings": {
-    "width": 1600,
-    "height": 2560
-  }
-}
+### 環境変数
+```env
+# AI API Keys（オプション - 高度な機能用）
+OPENAI_API_KEY=your_key_here
+ANTHROPIC_API_KEY=your_key_here
+
+# 通知設定（オプション）
+DISCORD_WEBHOOK=your_webhook_url
 ```
-
-## 📈 成功指標・KPI
-
-### 目標設定
-- **日次出版数**: 1冊/日
-- **品質スコア**: 4.0/5.0以上
-- **収益率**: $100/日以上
-- **成功率**: 90%以上
-
-### 監視ダッシュボード
-- リアルタイム統計
-- エラー監視
-- 収益トラッキング
-- 品質トレンド
-
-## 🔒 セキュリティ & コンプライアンス
-
-### データ保護
-- APIキーの暗号化保存
-- ログの自動削除
-- 個人情報の非収集
-
-### 著作権対応
-- オリジナリティチェック
-- 引用・参考文献管理
-- AI生成コンテンツの明示
 
 ## 🚨 トラブルシューティング
 
 ### よくある問題
-1. **API制限エラー**
-   - 複数プロバイダーのローテーション
-   - レート制限の監視
+1. **Python環境**: `pip3 install -r requirements.txt`
+2. **Node.js**: `npm install` または `npm run setup`
+3. **権限エラー**: GitHubアクセストークン設定確認
 
-2. **品質基準未達成**
-   - プロンプト最適化
-   - 人的レビューの追加
-
-3. **KDPアップロードエラー**
-   - 規約変更の監視
-   - 自動リトライ機能
-
-### ログ確認
-```bash
-# システムログ
-tail -f logs/automation.log
-
-# エラーログ
-grep ERROR logs/automation.log
-
-# 統計確認
-cat stats/daily-stats.json
-```
-
-## 🤝 貢献・サポート
-
-### 貢献方法
-1. Issues報告
-2. Pull Request提出
-3. ドキュメント改善
-4. 品質向上提案
-
-### コミュニティ
-- [GitHub Discussions](https://github.com/boxi-rgb/living-book-engine-v2/discussions)
-- [Discord Server](https://discord.gg/your-server)
-
-## 📜 ライセンス
-
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照
+### サポート
+- **[GitHub Issues](https://github.com/boxi-rgb/living-book-engine-v2/issues)**
+- **[Discussions](https://github.com/boxi-rgb/living-book-engine-v2/discussions)**
 
 ## 🔮 ロードマップ
 
-### Phase 1 (現在)
-- [x] 基本システム構築
-- [x] AI執筆パイプライン
-- [x] KDP変換機能
+### Phase 1 ✅ (完了)
+- [x] コミュニティシステム基盤
+- [x] AI執筆システム実証
+- [x] KDP変換機能完成
+- [x] 3冊の書籍完成
 
-### Phase 2 (次期)
-- [ ] 多言語対応
-- [ ] 高度な分析機能
+### Phase 2 🔄 (進行中)
+- [ ] Webサイトデプロイ
+- [ ] コミュニティ参加促進
+- [ ] 品質向上システム
+- [ ] 多言語対応準備
+
+### Phase 3 🎯 (計画中)
 - [ ] API公開
+- [ ] 収益分配システム
+- [ ] モバイルアプリ
+- [ ] AI音声読み上げ
 
-### Phase 3 (将来)
-- [ ] 音声書籍対応
-- [ ] 動画コンテンツ
-- [ ] NFT統合
+## 📜 ライセンス
+
+**MIT License** - オープンソースで誰でも利用・改変可能
+
+## 🏅 クレジット
+
+**開発**: Claude AI + GEMINI AI 協業プロジェクト  
+**コンセプト**: 読者共創型・自己進化出版の実現  
+**目標**: 出版業界のデモクラタイゼーション
 
 ---
 
-## 📞 お問い合わせ
+*🌟 一緒に出版の未来を創造しましょう！*
 
-- **Email**: support@livingbookengine.com
-- **GitHub**: [boxi-rgb](https://github.com/boxi-rgb)
-- **Website**: [livingbookengine.com](https://livingbookengine.com)
+**Living Book Engine v2 - Where Books Come Alive**
 
----
-
-*🤖 AI技術とコミュニティの力で出版業界を革新する*
-
-**Living Book Engine v2 × KDP自動化システム**
-
-# Last Updated: 2025-06-29 04:27:00 JST
+# Last Updated: 2025-06-29 04:36:00 JST

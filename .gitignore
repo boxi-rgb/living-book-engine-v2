@@ -12,11 +12,14 @@ yarn-error.log*
 
 # Build outputs
 .vitepress/dist/
+.vitepress/cache
 dist/
 build/
-*.epub
-*.pdf
-*.mobi
+
+# Generated EPUB/PDF files (comment out for development testing)
+# *.epub
+# *.pdf
+# *.mobi
 
 # Temporary files
 tmp/
@@ -56,10 +59,10 @@ venv/
 .venv/
 .pytest_cache/
 
-# Generated content
+# Generated content (KDP automation)
 output/
-kdp-output/
-# generated-books/ # テスト用に一時的にコミット許可
+# kdp-output/ # Allow for testing and demonstration
+# docs/generated-books/ # Allow for testing and demonstration
 stats/daily-*.json
 logs/*.log
 
@@ -71,4 +74,4 @@ backups/
 # Claude Code
 .claude/cache/
 
-# Last Updated: 2025-06-29 04:28:00 JST
+# Last Updated: 2025-06-29 04:35:00 JST

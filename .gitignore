@@ -59,7 +59,7 @@ venv/
 # Generated content
 output/
 kdp-output/
-generated-books/
+# generated-books/ # テスト用に一時的にコミット許可
 stats/daily-*.json
 logs/*.log
 

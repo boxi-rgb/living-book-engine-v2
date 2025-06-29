@@ -1,0 +1,67 @@
+{
+  "name": "living-book-kdp-automation",
+  "version": "1.0.0",
+  "description": "Living Book Engine v2 × KDP自動化システム",
+  "main": "content-generation-pipeline.js",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs",
+    "generate-daily-book": "node content-generation-pipeline.js",
+    "convert-to-kdp": "python3 markdown-to-kdp-converter.py",
+    "full-automation": "npm run generate-daily-book && npm run convert-to-kdp",
+    "setup": "npm install && pip3 install -r requirements.txt",
+    "lint": "eslint . --ext .js,.ts,.vue",
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "vitepress",
+    "kdp",
+    "automation",
+    "ai",
+    "publishing",
+    "ebook",
+    "markdown"
+  ],
+  "author": "AI Automation System",
+  "license": "MIT",
+  "dependencies": {
+    "vitepress": "^1.0.0",
+    "@anthropic-ai/sdk": "^0.17.0",
+    "openai": "^4.0.0",
+    "markdown-it": "^14.0.0",
+    "fs-extra": "^11.2.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/boxi-rgb/living-book-engine-v2.git"
+  },
+  "config": {
+    "kdp": {
+      "daily_generation": true,
+      "auto_upload": false,
+      "quality_threshold": 8,
+      "supported_formats": ["epub", "pdf", "mobi"]
+    },
+    "ai": {
+      "primary_provider": "anthropic",
+      "fallback_provider": "openai",
+      "max_tokens": 4000,
+      "temperature": 0.7
+    }
+  }
+}

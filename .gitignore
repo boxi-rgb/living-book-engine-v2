@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Build outputs
+.vitepress/dist/
+dist/
+build/
+*.epub
+*.pdf
+*.mobi
+
+# Temporary files
+tmp/
+temp/
+.temp/
+.tmp/
+
+# API Keys and secrets
+*.key
+*.pem
+config/secrets.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+.pytest_cache/
+
+# Generated content
+output/
+kdp-output/
+generated-books/
+stats/daily-*.json
+logs/*.log
+
+# Backup files
+backups/
+*.backup
+*.bak
+
+# Claude Code
+.claude/cache/
+
+# Last Updated: 2025-06-29 04:28:00 JST

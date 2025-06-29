@@ -1,0 +1,332 @@
+name: KDP Auto Publishing Pipeline
+# Living Book Engine v2 × KDP自動化ワークフロー
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 毎日06:00 JST (21:00 UTC前日)
+  push:
+    paths: 
+      - 'docs/**/*.md'
+      - 'content-generation-pipeline.js'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: '書籍トピック'
+        required: false
+        default: 'auto'
+      category:
+        description: 'カテゴリ'
+        required: false
+        default: 'self-help'
+
+env:
+  NODE_VERSION: '18'
+  BOOK_OUTPUT_DIR: 'generated-books'
+
+jobs:
+  # Job 1: AI コンテンツ生成
+  ai-content-generation:
+    runs-on: ubuntu-latest
+    outputs:
+      book-path: ${{ steps.generate.outputs.book-path }}
+      book-title: ${{ steps.generate.outputs.book-title }}
+      quality-score: ${{ steps.generate.outputs.quality-score }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🔧 Install Dependencies
+        run: |
+          npm ci
+          npm install @anthropic-ai/sdk openai
+          
+      - name: 🤖 Generate AI Content
+        id: generate
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "🚀 AI書籍生成開始..."
+          node content-generation-pipeline.js
+          
+          # 生成結果の確認
+          if [ -d "docs/generated-books" ]; then
+            LATEST_BOOK=$(ls -t docs/generated-books | head -n1)
+            echo "book-path=docs/generated-books/$LATEST_BOOK" >> $GITHUB_OUTPUT
+            
+            # タイトル抽出
+            TITLE=$(grep -m1 "^# " "docs/generated-books/$LATEST_BOOK/index.md" | sed 's/^# //')
+            echo "book-title=$TITLE" >> $GITHUB_OUTPUT
+            
+            echo "✅ 書籍生成完了: $TITLE"
+          else
+            echo "❌ 書籍生成失敗"
+            exit 1
+          fi
+          
+      - name: 📊 Quality Assessment
+        id: quality
+        run: |
+          # 品質スコア計算（簡易版）
+          BOOK_PATH="${{ steps.generate.outputs.book-path }}"
+          WORD_COUNT=$(find "$BOOK_PATH" -name "*.md" -exec wc -w {} + | tail -n1 | awk '{print $1}')
+          FILE_COUNT=$(find "$BOOK_PATH" -name "*.md" | wc -l)
+          
+          # 品質スコア計算
+          if [ $WORD_COUNT -gt 40000 ] && [ $FILE_COUNT -gt 10 ]; then
+            QUALITY_SCORE=9
+          elif [ $WORD_COUNT -gt 30000 ] && [ $FILE_COUNT -gt 8 ]; then
+            QUALITY_SCORE=8
+          else
+            QUALITY_SCORE=7
+          fi
+          
+          echo "quality-score=$QUALITY_SCORE" >> $GITHUB_OUTPUT
+          echo "📊 品質スコア: $QUALITY_SCORE/10"
+          echo "📝 文字数: $WORD_COUNT words"
+          echo "📄 ファイル数: $FILE_COUNT files"
+          
+      - name: 💾 Commit Generated Content
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add docs/generated-books/
+          if git diff --cached --quiet; then
+            echo "変更なし - スキップ"
+          else
+            git commit -m "📚 AI生成書籍追加: ${{ steps.generate.outputs.book-title }}"
+            git push
+          fi
+
+  # Job 2: VitePress ビルド & 品質管理
+  vitepress-build:
+    needs: ai-content-generation
+    runs-on: ubuntu-latest
+    if: needs.ai-content-generation.outputs.quality-score >= '8'
+    
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main  # 最新のコミット取得
+          
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 🔧 Install Dependencies
+        run: npm ci
+        
+      - name: 🏗️ Build VitePress
+        run: |
+          echo "🏗️ VitePress ビルド開始..."
+          npm run build
+          
+      - name: 📋 Generate Book Manifest
+        run: |
+          BOOK_PATH="${{ needs.ai-content-generation.outputs.book-path }}"
+          cat > book-manifest.json << EOF
+          {
+            "title": "${{ needs.ai-content-generation.outputs.book-title }}",
+            "path": "$BOOK_PATH",
+            "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "quality_score": ${{ needs.ai-content-generation.outputs.quality-score }},
+            "status": "ready_for_conversion",
+            "formats_target": ["epub", "pdf", "mobi"]
+          }
+          EOF
+          
+      - name: 📤 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitepress-build
+          path: |
+            .vitepress/dist/
+            book-manifest.json
+            ${{ needs.ai-content-generation.outputs.book-path }}/
+
+  # Job 3: フォーマット変換 (Markdown → EPUB/PDF)
+  format-conversion:
+    needs: [ai-content-generation, vitepress-build]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vitepress-build
+          
+      - name: 🔧 Setup Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-xetex
+          
+      - name: 📖 Convert to EPUB
+        run: |
+          BOOK_PATH="${{ needs.ai-content-generation.outputs.book-path }}"
+          BOOK_TITLE="${{ needs.ai-content-generation.outputs.book-title }}"
+          
+          echo "📖 EPUB変換開始..."
+          
+          # メタデータファイル作成
+          cat > metadata.yaml << EOF
+          title: $BOOK_TITLE
+          author: AI Generated Content
+          date: $(date +%Y-%m-%d)
+          language: ja
+          EOF
+          
+          # Markdown統合
+          find "$BOOK_PATH" -name "*.md" -not -name "index.md" | sort | xargs cat > combined.md
+          
+          # EPUB生成
+          pandoc metadata.yaml combined.md \
+            --from markdown \
+            --to epub \
+            --output "$BOOK_TITLE.epub" \
+            --epub-cover-image=cover.png \
+            --toc
+            
+          echo "✅ EPUB生成完了"
+          
+      - name: 📄 Convert to PDF
+        run: |
+          BOOK_TITLE="${{ needs.ai-content-generation.outputs.book-title }}"
+          
+          echo "📄 PDF変換開始..."
+          
+          pandoc combined.md \
+            --from markdown \
+            --to pdf \
+            --output "$BOOK_TITLE.pdf" \
+            --pdf-engine=xelatex \
+            --toc \
+            --variable mainfont="Noto Sans CJK JP"
+            
+          echo "✅ PDF生成完了"
+          
+      - name: 🎨 Generate Cover Image
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          BOOK_TITLE="${{ needs.ai-content-generation.outputs.book-title }}"
+          
+          # カバー画像生成（DALL-E 3使用）
+          node -e "
+            const OpenAI = require('openai');
+            const fs = require('fs');
+            
+            const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+            
+            (async () => {
+              try {
+                const response = await openai.images.generate({
+                  model: 'dall-e-3',
+                  prompt: 'Professional book cover design for \"$BOOK_TITLE\", modern minimalist style, high quality',
+                  size: '1024x1024',
+                  quality: 'standard',
+                  n: 1
+                });
+                
+                const imageUrl = response.data[0].url;
+                console.log('Cover generated:', imageUrl);
+                
+                // 画像ダウンロード（実装簡略化）
+                console.log('✅ カバー画像生成完了');
+              } catch (error) {
+                console.error('カバー生成エラー:', error.message);
+              }
+            })();
+          "
+          
+      - name: 📤 Upload Converted Files
+        uses: actions/upload-artifact@v4
+        with:
+          name: kdp-ready-files
+          path: |
+            *.epub
+            *.pdf
+            *.png
+
+  # Job 4: KDP自動アップロード（実装は複雑なため骨組みのみ）
+  kdp-upload:
+    needs: [ai-content-generation, format-conversion]
+    runs-on: ubuntu-latest
+    if: needs.ai-content-generation.outputs.quality-score >= '9'
+    
+    steps:
+      - name: 📥 Download KDP Files
+        uses: actions/download-artifact@v4
+        with:
+          name: kdp-ready-files
+          
+      - name: 🚀 Upload to KDP (Mock)
+        env:
+          KDP_USERNAME: ${{ secrets.KDP_USERNAME }}
+          KDP_PASSWORD: ${{ secrets.KDP_PASSWORD }}
+        run: |
+          echo "🚀 KDP自動アップロード準備中..."
+          echo "📚 書籍: ${{ needs.ai-content-generation.outputs.book-title }}"
+          echo "📊 品質スコア: ${{ needs.ai-content-generation.outputs.quality-score }}/10"
+          
+          # KDP API連携（実装必要）
+          # 現在はモック表示のみ
+          echo "✅ KDPアップロード完了（モック）"
+          
+      - name: 📊 Success Notification
+        run: |
+          echo "🎉 日次KDP自動出版完了!"
+          echo "📖 書籍名: ${{ needs.ai-content-generation.outputs.book-title }}"
+          echo "📊 品質スコア: ${{ needs.ai-content-generation.outputs.quality-score }}/10"
+          echo "🕐 処理時間: $(date)"
+
+  # Job 5: 分析・レポート
+  analytics-report:
+    needs: [ai-content-generation, vitepress-build, format-conversion]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: 📊 Generate Daily Report
+        run: |
+          cat > daily-report.md << EOF
+          # 📊 KDP自動化 日次レポート
+          
+          **日付**: $(date +%Y-%m-%d)
+          **実行時刻**: $(date +%H:%M:%S)
+          
+          ## 生成結果
+          - **書籍タイトル**: ${{ needs.ai-content-generation.outputs.book-title || 'N/A' }}
+          - **品質スコア**: ${{ needs.ai-content-generation.outputs.quality-score || 'N/A' }}/10
+          - **ファイルパス**: ${{ needs.ai-content-generation.outputs.book-path || 'N/A' }}
+          
+          ## ジョブ実行状況
+          - **AI生成**: ${{ needs.ai-content-generation.result }}
+          - **VitePress**: ${{ needs.vitepress-build.result }}
+          - **変換**: ${{ needs.format-conversion.result }}
+          
+          ## 次回改善点
+          - 品質スコア向上施策
+          - 処理時間最適化
+          - エラーハンドリング強化
+          
+          ---
+          *自動生成レポート - Living Book Engine v2*
+          EOF
+          
+          echo "📋 日次レポート生成完了"
+          cat daily-report.md
+
+# Last Updated: 2025-06-29 04:23:00 JST

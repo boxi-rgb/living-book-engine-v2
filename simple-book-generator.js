@@ -6,6 +6,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const GeminiApiService = require('./gemini-api-service'); // Gemini APIサービスをインポート
+const wanakana = require('wanakana'); // wanakanaをインポート
 
 class SimpleBookGenerator {
   constructor() {
@@ -31,7 +32,50 @@ class SimpleBookGenerator {
       'business': "ビジネス分野、特にスタートアップや中小企業経営者向けの成功戦略に関する書籍のアイデア。",
       'technology': "最新技術トレンド（例: AI、Web3、メタバースなど）が仕事や社会に与える影響と活用法に関する書籍のアイデア。"
     };
-    this.numChapters = 5; // 生成する章の数
+    this.numChapters = 5; // 生成する章の数 (元に戻す)
+  }
+
+  /**
+   * 安全なファイルスラッグを生成する
+   * @param {string} title 元のタイトル
+   * @returns {string} 生成されたスラッグ
+   */
+  _generateSafeSlug(title) {
+    if (!title || typeof title !== 'string') {
+      return 'untitled-book';
+    }
+
+    // 1. wanakanaでローマ字に変換 (句読点などはある程度処理されるが、オプションでカスタマイズも可能)
+    //    IMEModeを有効にすると、より自然な区切りで変換されることがある
+    let slug = wanakana.toRomaji(title, { customRomajiMapping: { '：': ':', '！': '!', '？': '?' } }); // 一部の記号は維持してみる
+
+    // 2. 小文字化
+    slug = slug.toLowerCase();
+
+    // 3. 特定の記号をハイフンに置換（コロンなど、URLやファイル名で問題を起こしやすいもの）
+    //    英数字、ハイフン、スペース以外のものをハイフンに置換（ただし上記で維持したものは除く）
+    slug = slug.replace(/[^a-z0-9\s-]/g, '-');
+
+    // 4. 連続するスペースやハイフンを単一のハイフンに
+    slug = slug.replace(/\s+/g, '-').replace(/-+/g, '-');
+
+    // 5. 先頭と末尾のハイフンを削除
+    slug = slug.replace(/^-+|-+$/g, '');
+
+    // 6. 最大長に切り詰める (今回は40文字に設定)
+    const maxLength = 40;
+    if (slug.length > maxLength) {
+      slug = slug.substring(0, maxLength);
+      // 切り詰めた結果、末尾がハイフンになる可能性があるので再処理
+      slug = slug.replace(/-+$/g, '');
+    }
+
+    // 7. 結果が空文字列またはハイフンのみになった場合はデフォルト値を返す
+    if (!slug || slug === '-') {
+      return 'untitled-book';
+    }
+
+    return slug;
   }
 
   /**
@@ -135,8 +179,8 @@ JSONスキーマ:
 あなたはプロのライターです。以下の情報に基づいて、書籍「${bookTitle}」の第${chapterOutline.chapter_number}章「${chapterOutline.chapter_title}」の本文を執筆してください。
 章の要約は「${chapterOutline.chapter_summary}」です。
 この要約を元に、読者にとって有益で魅力的な内容をMarkdown形式で記述してください。
-章の本文は、複数のセクション（例: ## 見出し）で構成し、必要に応じてリストや強調表現も使用してください。
-最低でも500文字程度の十分なボリュームで執筆してください。
+章の本文は、1つの主要なセクション（## 見出し で始めてください）と、それに続く2-3パラグラフの短い内容（全体で約200文字から300文字程度）で構成してください。
+過度に長い内容は避けてください。
 `;
     try {
       console.log(`「${bookTitle}」 - 第${chapterOutline.chapter_number}章「${chapterOutline.chapter_title}」の本文生成を Gemini Pro モデルにリクエストします...`);
@@ -144,14 +188,27 @@ JSONスキーマ:
         prompt,
         'chapter_writing', // Proモデルを使うタスクタイプ
         {
-          temperature: 0.75, // やや創造的に
-          // maxOutputTokens: 4096 // 必要に応じて設定
+          temperature: 0.7, // 少し抑えめに
+          maxOutputTokens: 512 // 生成トークン数にも上限を設定
         }
       );
       console.log(`第${chapterOutline.chapter_number}章の本文を正常に取得しました。`);
+      // 念のため、生成されたコンテンツの長さをチェック（デバッグ用）
+      if (chapterContent && typeof chapterContent === 'string') {
+        console.log(`生成された第${chapterOutline.chapter_number}章の本文の長さ: ${chapterContent.length}文字`);
+        if (chapterContent.length < 50) { // あまりに短い場合は警告
+            console.warn(`警告: 第${chapterOutline.chapter_number}章の本文が非常に短いです（50文字未満）。内容を確認してください。`);
+            console.warn(`取得したコンテンツ: 「${chapterContent.substring(0,100)}...」`);
+        }
+      } else {
+        console.warn(`警告: 第${chapterOutline.chapter_number}章の本文が期待した形式（文字列）ではありません。取得したコンテンツ:`, chapterContent);
+        // 空文字列やnullでない不正な値の場合、エラーとみなすか、空文字列として扱うか検討。
+        // ここでは一旦そのまま返し、呼び出し元で !chapterFullContent でチェックされる。
+      }
       return chapterContent;
     } catch (error) {
       console.error(`第${chapterOutline.chapter_number}章の本文生成中にエラーが発生しました: ${error.message}`);
+      // エラー発生時は null を返すことで、呼び出し元が失敗を検知できるようにする
       return null;
     }
   }
@@ -178,11 +235,15 @@ JSONスキーマ:
     for (const chapterInfo of bookOutline.chapters) {
       console.log(`第${chapterInfo.chapter_number}章「${chapterInfo.chapter_title}」の処理を開始します...`);
       const chapterFullContent = await this._generateChapterFullContent(bookTitle, chapterInfo);
-      if (!chapterFullContent) {
-        // 1つの章の生成に失敗しても、他の章の処理は続けるか、全体を中止するか検討。
-        // ここではエラーとして全体を中止する。
-        throw new Error(`第${chapterInfo.chapter_number}章「${chapterInfo.chapter_title}」の本文生成に失敗しました。`);
+      // chapterFullContent が null (APIエラーなど) の場合はエラーとするが、空文字列 "" は許容する
+      if (chapterFullContent === null) {
+        throw new Error(`第${chapterInfo.chapter_number}章「${chapterInfo.chapter_title}」の本文生成中にAPIエラーまたは致命的な問題が発生しました。`);
       }
+      // 空文字列の場合でも、処理は継続し、空の章として扱う
+      // （必要であれば、ここで固定の代替テキストを設定することも可能）
+      // if (chapterFullContent === "") {
+      //   console.warn(`警告: 第${chapterInfo.chapter_number}章の本文が空でした。`);
+      // }
       generatedChapters.push({
         title: chapterInfo.chapter_title, // AIが生成した章タイトル
         content: chapterFullContent     // AIが生成した章本文
@@ -190,8 +251,7 @@ JSONスキーマ:
     }
 
     const timestamp = new Date().toISOString().split('T')[0];
-    // bookSlug はカテゴリと日付から生成するが、書籍タイトルも一部含めるとよりユニークになる可能性
-    const safeBookTitleForSlug = bookTitle.replace(/[^\w\s一-龠ぁ-んァ-ヶー]/g, '').replace(/\s+/g, '-').substring(0, 50);
+    const safeBookTitleForSlug = this._generateSafeSlug(bookTitle); // 新しいスラッグ生成関数を呼び出す
     const bookSlug = `${category}-${safeBookTitleForSlug}-${timestamp}`;
     const bookDir = path.join(this.outputDir, bookSlug);
 
@@ -234,6 +294,8 @@ ${generatedChapters.map((chapter, index) =>
 **生成日時**: ${new Date().toLocaleString('ja-JP')}
 `;
     await fs.writeFile(path.join(bookDir, 'index.md'), indexContent);
+    // console.log(`[デバッグ] index.md の内容:\n${indexContent.substring(0, 200)}...`);
+
 
     // 各章のファイル作成
     for (let i = 0; i < generatedChapters.length; i++) {
@@ -262,6 +324,7 @@ ${chapter.content}
         path.join(bookDir, `chapter-${chapterNumber}.md`),
         chapterContentMarkdown
       );
+      // console.log(`[デバッグ] chapter-${chapterNumber}.md の内容:\n${chapterContentMarkdown.substring(0, 200)}...`);
     }
 
     console.log(`🎉 書籍「${bookTitle}」の生成が完了しました！`);

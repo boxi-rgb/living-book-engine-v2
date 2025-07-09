@@ -3,14 +3,26 @@
  * シンプル書籍生成システム (Gemini API連携版)
  */
 
-const fs = require('fs').promises;
+const fs = require('fs');
+const fsPromises = require('fs').promises; // fs.promises を別名でインポート
 const path = require('path');
-const GeminiApiService = require('./gemini-api-service'); // Gemini APIサービスをインポート
-const wanakana = require('wanakana'); // wanakanaをインポート
+const GeminiApiService = require('./gemini-api-service');
+const wanakana = require('wanakana');
+
+// 設定ファイルの読み込み
+// スクリプトの比較的早い段階で読み込む
+let APP_CONFIG;
+try {
+  APP_CONFIG = JSON.parse(fs.readFileSync('./config.json', 'utf-8'));
+} catch (error) {
+  console.error("設定ファイル (config.json) の読み込みまたはパースに失敗しました。", error);
+  // 設定ファイルが読めない場合は致命的エラーとして終了する
+  process.exit(1);
+}
 
 class SimpleBookGenerator {
   constructor() {
-    this.outputDir = './docs/generated-books';
+    this.outputDir = APP_CONFIG.outputDir || './docs/generated-books'; // 設定ファイルから取得、なければデフォルト
     if (!process.env.GEMINI_API_KEY) {
       console.error("エラー: GEMINI_API_KEY 環境変数が設定されていません。");
       console.error("プロジェクトルートに .env ファイルを作成し、GEMINI_API_KEY を設定してください。");
@@ -26,13 +38,9 @@ class SimpleBookGenerator {
         this.apiService = null;
       }
     }
-    // カテゴリごとの大まかなテーマや指示。詳細はAIが生成する。
-    this.categoryInstructions = {
-      'self-help': "自己啓発分野で、読者が具体的な行動を起こせるような実践的ガイドブックのアイデア。",
-      'business': "ビジネス分野、特にスタートアップや中小企業経営者向けの成功戦略に関する書籍のアイデア。",
-      'technology': "最新技術トレンド（例: AI、Web3、メタバースなど）が仕事や社会に与える影響と活用法に関する書籍のアイデア。"
-    };
-    this.numChapters = 5; // 生成する章の数 (元に戻す)
+    // カテゴリごとの指示とデフォルトタイトルを設定ファイルから取得
+    this.categoriesConfig = APP_CONFIG.categories || {};
+    this.numChapters = APP_CONFIG.defaultNumChapters || 5; // 設定ファイルから取得、なければデフォルト5
   }
 
   /**
@@ -41,19 +49,21 @@ class SimpleBookGenerator {
    * @returns {string} 生成されたスラッグ
    */
   _generateSafeSlug(title) {
+    const slugConfig = APP_CONFIG.slugGeneration || {};
+    const defaultSlug = slugConfig.defaultSlug || 'untitled-book';
+    const maxLength = slugConfig.maxLength || 40;
+
     if (!title || typeof title !== 'string') {
-      return 'untitled-book';
+      return defaultSlug;
     }
 
-    // 1. wanakanaでローマ字に変換 (句読点などはある程度処理されるが、オプションでカスタマイズも可能)
-    //    IMEModeを有効にすると、より自然な区切りで変換されることがある
-    let slug = wanakana.toRomaji(title, { customRomajiMapping: { '：': ':', '！': '!', '？': '?' } }); // 一部の記号は維持してみる
+    // 1. wanakanaでローマ字に変換
+    let slug = wanakana.toRomaji(title, { customRomajiMapping: { '：': ':', '！': '!', '？': '?' } });
 
     // 2. 小文字化
     slug = slug.toLowerCase();
 
-    // 3. 特定の記号をハイフンに置換（コロンなど、URLやファイル名で問題を起こしやすいもの）
-    //    英数字、ハイフン、スペース以外のものをハイフンに置換（ただし上記で維持したものは除く）
+    // 3. 英数字、ハイフン、スペース以外のものをハイフンに置換
     slug = slug.replace(/[^a-z0-9\s-]/g, '-');
 
     // 4. 連続するスペースやハイフンを単一のハイフンに
@@ -62,17 +72,15 @@ class SimpleBookGenerator {
     // 5. 先頭と末尾のハイフンを削除
     slug = slug.replace(/^-+|-+$/g, '');
 
-    // 6. 最大長に切り詰める (今回は40文字に設定)
-    const maxLength = 40;
+    // 6. 最大長に切り詰める
     if (slug.length > maxLength) {
       slug = slug.substring(0, maxLength);
-      // 切り詰めた結果、末尾がハイフンになる可能性があるので再処理
       slug = slug.replace(/-+$/g, '');
     }
 
     // 7. 結果が空文字列またはハイフンのみになった場合はデフォルト値を返す
     if (!slug || slug === '-') {
-      return 'untitled-book';
+      return defaultSlug;
     }
 
     return slug;
@@ -89,7 +97,14 @@ class SimpleBookGenerator {
       return null;
     }
 
-    const categoryInstruction = this.categoryInstructions[category] || `一般的な ${category} 分野の書籍のアイデア。`;
+    const categoryConfig = this.categoriesConfig[category];
+    if (!categoryConfig || !categoryConfig.instruction) {
+      console.error(`カテゴリ「${category}」の設定または指示が見つかりません。config.jsonを確認してください。`);
+      // フォールバックとして汎用的な指示を使うか、エラーにするか。ここではエラーとする。
+      throw new Error(`カテゴリ「${category}」の指示が設定ファイルにありません。`);
+    }
+    const categoryInstruction = categoryConfig.instruction;
+
     const prompt = `
 あなたはプロの書籍編集者です。以下の指示に基づいて、新しい書籍のタイトルと${this.numChapters}章構成の各章のタイトルおよび短い要約（各章1-2文程度）を提案してください。
 出力は必ず指定されたJSONスキーマに従ってください。
@@ -255,7 +270,7 @@ JSONスキーマ:
     const bookSlug = `${category}-${safeBookTitleForSlug}-${timestamp}`;
     const bookDir = path.join(this.outputDir, bookSlug);
 
-    await fs.mkdir(bookDir, { recursive: true });
+    await fsPromises.mkdir(bookDir, { recursive: true });
 
     // index.md作成 (AIが生成したタイトルと章構成を使用)
     const indexContent = `---
@@ -293,7 +308,7 @@ ${generatedChapters.map((chapter, index) =>
 
 **生成日時**: ${new Date().toLocaleString('ja-JP')}
 `;
-    await fs.writeFile(path.join(bookDir, 'index.md'), indexContent);
+    await fsPromises.writeFile(path.join(bookDir, 'index.md'), indexContent);
     // console.log(`[デバッグ] index.md の内容:\n${indexContent.substring(0, 200)}...`);
 
 
@@ -320,7 +335,7 @@ ${chapter.content}
 
 *第${chapterNumber}章「${chapter.title}」完了 - 全${generatedChapters.length}章中*
 `;
-      await fs.writeFile(
+      await fsPromises.writeFile(
         path.join(bookDir, `chapter-${chapterNumber}.md`),
         chapterContentMarkdown
       );

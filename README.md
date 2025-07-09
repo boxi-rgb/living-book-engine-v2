@@ -149,15 +149,55 @@ npm run full-automation
 // 文字数や品質基準、言語といった下記設定は直接利用されていません。
 // 書籍の章数（現在は5章固定）や、より詳細な生成パラメータは simple-book-generator.js および
 // gemini-api-service.js 内のプロンプトやロジックで制御されています。
+// 主要な設定はプロジェクトルートの `config.json` ファイルで行います。
 const config = {
-  categories: ['self-help', 'business', 'technology'], // simple-book-generator.js内で定義済み
+  categories: ['self-help', 'business', 'technology'], // config.jsonで定義・カスタマイズ可能
   targetLength: 50000,  // 文字数 (現在参照されていません)
   qualityThreshold: 8,  // 品質基準（1-10）(現在参照されていません)
   languages: ['ja', 'en'] // (現在参照されていません。主に日本語で生成)
 }
 ```
 
-simple-book-generator.js は、内部的にGemini ProモデルとFlashモデルをタスク（書籍概要の生成、章本文の執筆など）に応じて使い分けています。ユーザーが直接モデルを指定する機能は現在のバージョンでは提供されていません。
+simple-book-generator.js は、内部的にGemini ProモデルとFlashモデルをタスク（書籍概要の生成、章本文の執筆など）に応じて使い分けています。ユーザーが直接モデルを指定する機能は現在のバージョンでは提供されていません。モデルの種類は `config.json` 内の `apiService` セクションで確認できます（現時点ではスクリプト内で直接参照はしていませんが、将来的な拡張のため）。
+
+### `config.json` による設定
+
+書籍生成の挙動は、プロジェクトルートにある `config.json` ファイルで詳細にカスタマイズできます。主な設定項目は以下の通りです。
+
+*   `outputDir`: (オプション) 生成された書籍が格納されるディレクトリパス。デフォルトは `./docs/generated-books`。
+*   `defaultNumChapters`: 生成される書籍のデフォルトの章数。
+*   `categories`: 書籍カテゴリごとの設定。
+    *   各カテゴリキー（例: `"self-help"`）に対して、以下の情報を設定します。
+        *   `instruction`: そのカテゴリの書籍を生成する際のAIへの指示内容。
+        *   `defaultTitle`: （現在未使用）AIがタイトル生成に失敗した場合などのフォールバック用。
+    *   新しいカテゴリを追加する場合は、この `categories` オブジェクトに新しいキーと対応する `instruction` を追加してください。
+*   `slugGeneration`: ファイルシステムで安全なディレクトリ名を生成する際のオプション。
+    *   `maxLength`: 生成されるスラッグ（書籍タイトルから変換された部分）の最大長。
+    *   `defaultSlug`: タイトルから有効なスラッグが生成できなかった場合のデフォルト値。
+*   `apiService`: (将来的な参照用) AIモデルに関する設定。
+    *   `proModel`: 使用する高性能モデル名。
+    *   `flashModel`: 使用する高速・軽量モデル名。
+    *   `defaultTemperature`: AI生成時のデフォルトの温度設定。
+
+例: `config.json` の一部
+```json
+{
+  "defaultNumChapters": 3,
+  "categories": {
+    "my-new-category": {
+      "instruction": "私の新しいカスタムカテゴリに関する書籍のアイデア。",
+      "defaultTitle": "カスタム書籍"
+    },
+    // ... 他のカテゴリ設定 ...
+  },
+  "slugGeneration": {
+    "maxLength": 35,
+    "defaultSlug": "custom-untitled"
+  }
+  // ...
+}
+```
+このファイルを編集することで、コードを直接変更することなく、書籍生成の様々な側面を調整できます。
 
 ### 環境変数
 ```env

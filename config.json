@@ -1,0 +1,30 @@
+{
+  "defaultNumChapters": 5,
+  "categories": {
+    "self-help": {
+      "instruction": "自己啓発分野で、読者が具体的な行動を起こせるような実践的ガイドブックのアイデア。特に、日常生活で直面する小さな悩みや課題を解決し、前向きな気持ちになれるような内容が望ましい。",
+      "defaultTitle": "（自己啓発タイトル未定）"
+    },
+    "business": {
+      "instruction": "ビジネス分野、特に中小企業の経営者や個人事業主が明日から使える、具体的な経営改善やマーケティング戦略に関する書籍のアイデア。成功事例よりも、失敗しないための実践的な知恵を重視する。",
+      "defaultTitle": "（ビジネス書タイトル未定）"
+    },
+    "technology": {
+      "instruction": "最新技術トレンド（例: 生成AI、XR、ブロックチェーンなど）が、専門家でない一般の人々の生活や仕事をどう変えるのか、分かりやすく解説する書籍のアイデア。技術的な詳細よりも、活用事例や未来像を中心に。",
+      "defaultTitle": "（テクノロジー書タイトル未定）"
+    },
+    "history": {
+      "instruction": "特定の歴史上の出来事や人物に焦点を当て、その背景、影響、現代への教訓などを、物語性を交えながら解説する読みやすい歴史書のアイデア。",
+      "defaultTitle": "（歴史書タイトル未定）"
+    }
+  },
+  "slugGeneration": {
+    "maxLength": 40,
+    "defaultSlug": "untitled-book"
+  },
+  "apiService": {
+    "proModel": "gemini-2.5-pro",
+    "flashModel": "gemini-2.5-flash",
+    "defaultTemperature": 0.7
+  }
+}

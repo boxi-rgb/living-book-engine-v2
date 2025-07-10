@@ -1,0 +1,1 @@
+{"outputDir":"./docs/generated-books","defaultNumChapters":5,"categories":{},"slugGeneration":{"maxLength":40,"defaultSlug":"untitled-book"},"apiService":{"proModel":"gemini-2.5-pro","flashModel":"gemini-2.5-flash","defaultTemperature":0.7}}

@@ -13,7 +13,7 @@
     "setup": "npm install && pip3 install -r requirements.txt",
     "lint": "eslint . --ext .js,.ts,.vue",
     "format": "prettier --write .",
-    "test": "echo \"Test suite not yet implemented\" && exit 1"
+    "test": "tape test/**/*.test.js"
   },
   "keywords": [
     "vitepress",
@@ -29,20 +29,23 @@
   "author": "Claude AI + GEMINI AI",
   "license": "MIT",
   "dependencies": {
-    "vitepress": "^1.2.3",
     "@anthropic-ai/sdk": "^0.17.0",
-    "openai": "^4.0.0",
-    "markdown-it": "^14.0.0",
-    "fs-extra": "^11.2.0",
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.6.0",
     "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.3.0",
+    "fs-extra": "^11.2.0",
+    "markdown-it": "^14.0.0",
     "node-cron": "^3.0.3",
-    "dotenv": "^16.3.0"
+    "openai": "^4.0.0",
+    "vitepress": "^1.2.3",
+    "wanakana": "^5.3.1"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
-    "@types/node": "^20.0.0",
+    "tape": "^5.9.0",
     "typescript": "^5.0.0"
   },
   "engines": {
@@ -58,7 +61,11 @@
       "daily_generation": true,
       "auto_upload": false,
       "quality_threshold": 8,
-      "supported_formats": ["epub", "pdf", "mobi"]
+      "supported_formats": [
+        "epub",
+        "pdf",
+        "mobi"
+      ]
     },
     "ai": {
       "primary_provider": "anthropic",

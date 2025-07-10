@@ -48,9 +48,15 @@ npm run dev
 3. **品質向上**: Markdown Lintによる自動品質チェック
 
 ### 3. AI自動出版システム
+
+`simple-book-generator.js` スクリプトは、Google の Gemini API (1.5 Pro および 1.5 Flash モデル) を利用して、書籍のタイトル、章構成、各章の本文を動的に生成します。
+実行には、プロジェクトルートに `.env` ファイルを作成し、有効な `GEMINI_API_KEY` を設定する必要があります。詳細は「環境変数」セクションを参照してください。
+
 ```bash
-# AI書籍生成（テスト版）
-npm run generate-daily-book
+# AI書籍生成 (Gemini API利用)
+# 例: node simple-book-generator.js self-help  (自己啓発カテゴリの書籍を1冊生成)
+# 例: node simple-book-generator.js all         (定義済み全カテゴリの書籍を生成)
+npm run generate-daily-book # (内部的に node simple-book-generator.js all を実行想定)
 
 # KDP変換
 npm run convert-to-kdp
@@ -64,10 +70,11 @@ npm run full-automation
 ```
 📦 living-book-engine-v2/
 ├── 🤖 AI自動化システム/
-│   ├── simple-book-generator.js      # AI書籍生成（実証済み）
+│   ├── simple-book-generator.js      # AI書籍生成 (Gemini API連携、動的コンテンツ生成)
+│   ├── gemini-api-service.js       # Gemini APIとの通信サービスクラス
 │   ├── quick-kdp-converter.py        # EPUB変換（実証済み）
 │   ├── automation-scheduler.js       # 自動化スケジューラー
-│   └── docs/generated-books/         # 生成済み書籍3冊
+│   └── docs/generated-books/         # AIにより生成された書籍が格納されるディレクトリ
 │
 ├── 🤝 コミュニティシステム/
 │   ├── .github/ISSUE_TEMPLATE/       # Issue テンプレート
@@ -137,20 +144,71 @@ npm run full-automation
 
 ### AI自動化設定
 ```javascript
-// 書籍生成カスタマイズ
+// 書籍生成カスタマイズ (将来的な拡張のための参考情報)
+// 現在の simple-book-generator.js では、カテゴリはスクリプト内で定義されており (self-help, business, technology)、
+// 文字数や品質基準、言語といった下記設定は直接利用されていません。
+// 書籍の章数（現在は5章固定）や、より詳細な生成パラメータは simple-book-generator.js および
+// gemini-api-service.js 内のプロンプトやロジックで制御されています。
+// 主要な設定はプロジェクトルートの `config.json` ファイルで行います。
 const config = {
-  categories: ['self-help', 'business', 'technology'],
-  targetLength: 50000,  // 文字数
-  qualityThreshold: 8,  // 品質基準（1-10）
-  languages: ['ja', 'en']
+  categories: ['self-help', 'business', 'technology'], // config.jsonで定義・カスタマイズ可能
+  targetLength: 50000,  // 文字数 (現在参照されていません)
+  qualityThreshold: 8,  // 品質基準（1-10）(現在参照されていません)
+  languages: ['ja', 'en'] // (現在参照されていません。主に日本語で生成)
 }
 ```
+
+simple-book-generator.js は、内部的にGemini ProモデルとFlashモデルをタスク（書籍概要の生成、章本文の執筆など）に応じて使い分けています。ユーザーが直接モデルを指定する機能は現在のバージョンでは提供されていません。モデルの種類は `config.json` 内の `apiService` セクションで確認できます（現時点ではスクリプト内で直接参照はしていませんが、将来的な拡張のため）。
+
+### `config.json` による設定
+
+書籍生成の挙動は、プロジェクトルートにある `config.json` ファイルで詳細にカスタマイズできます。主な設定項目は以下の通りです。
+
+*   `outputDir`: (オプション) 生成された書籍が格納されるディレクトリパス。デフォルトは `./docs/generated-books`。
+*   `defaultNumChapters`: 生成される書籍のデフォルトの章数。
+*   `categories`: 書籍カテゴリごとの設定。
+    *   各カテゴリキー（例: `"self-help"`）に対して、以下の情報を設定します。
+        *   `instruction`: そのカテゴリの書籍を生成する際のAIへの指示内容。
+        *   `defaultTitle`: （現在未使用）AIがタイトル生成に失敗した場合などのフォールバック用。
+    *   新しいカテゴリを追加する場合は、この `categories` オブジェクトに新しいキーと対応する `instruction` を追加してください。
+*   `slugGeneration`: ファイルシステムで安全なディレクトリ名を生成する際のオプション。
+    *   `maxLength`: 生成されるスラッグ（書籍タイトルから変換された部分）の最大長。
+    *   `defaultSlug`: タイトルから有効なスラッグが生成できなかった場合のデフォルト値。
+*   `apiService`: (将来的な参照用) AIモデルに関する設定。
+    *   `proModel`: 使用する高性能モデル名。
+    *   `flashModel`: 使用する高速・軽量モデル名。
+    *   `defaultTemperature`: AI生成時のデフォルトの温度設定。
+
+例: `config.json` の一部
+```json
+{
+  "defaultNumChapters": 3,
+  "categories": {
+    "my-new-category": {
+      "instruction": "私の新しいカスタムカテゴリに関する書籍のアイデア。",
+      "defaultTitle": "カスタム書籍"
+    },
+    // ... 他のカテゴリ設定 ...
+  },
+  "slugGeneration": {
+    "maxLength": 35,
+    "defaultSlug": "custom-untitled"
+  }
+  // ...
+}
+```
+このファイルを編集することで、コードを直接変更することなく、書籍生成の様々な側面を調整できます。
 
 ### 環境変数
 ```env
 # AI API Keys（オプション - 高度な機能用）
 OPENAI_API_KEY=your_key_here
 ANTHROPIC_API_KEY=your_key_here
+# Google Gemini API Key (書籍生成に必要)
+# Google AI Studio (https://aistudio.google.com/) でキーを取得し、
+# プロジェクトルートに .env ファイルを作成して以下のように設定してください:
+# GEMINI_API_KEY=YOUR_API_KEY_HERE
+GEMINI_API_KEY=your_gemini_api_key_here
 
 # 通知設定（オプション）
 DISCORD_WEBHOOK=your_webhook_url

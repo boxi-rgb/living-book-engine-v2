@@ -1,15 +1,13 @@
 // gemini-api-service.js
 require('dotenv').config();
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
-
-// モジュールスコープのAPI_KEY定数は削除
+const Logger = require('./logger'); // Loggerをインポート
 
 class GeminiApiService {
     constructor() {
         const apiKeyFromEnv = process.env.GEMINI_API_KEY;
         if (!apiKeyFromEnv) {
-            // この警告は、モジュールロード時ではなくインスタンス化時に意味を持つ
-            console.warn("警告: GEMINI_API_KEY 環境変数が設定されていません。GeminiApiService の一部機能が動作しない可能性があります。");
+            Logger.warn("GEMINI_API_KEY 環境変数が設定されていません。GeminiApiService の一部機能が動作しない可能性があります。");
             throw new Error("GEMINI_API_KEY が設定されていません。GeminiApiService を初期化できません。");
         }
         this.apiKey = apiKeyFromEnv;
@@ -51,18 +49,23 @@ class GeminiApiService {
             try {
                 return await apiCallFunction();
             } catch (error) {
-                console.error(`API呼び出し試行 ${i + 1}/${maxRetries} が失敗しました: ${error.message}`);
-                // リトライ可能なエラーコードか確認 (Google APIの一般的なエラーコードを参考に調整が必要)
-                // e.g. error.status === 429 (Rate Limit) or error.status >= 500 (Server Error)
-                // 詳細なエラーオブジェクト構造はSDKのドキュメントや実際のエラー応答を確認して調整
-                const isRetryable = error.message.includes('429') || parseInt(error.status) >= 500;
+                Logger.error(`API呼び出し試行 ${i + 1}/${maxRetries} が失敗しました:`, error.message);
+                Logger.debug("APIエラー詳細:", error); // エラーオブジェクト全体をデバッグログに
+
+                // error.status が存在し、それが数値であることを確認してからparseIntする
+                const statusCode = error.status ? parseInt(error.status) : null;
+                const isRetryable = error.message.includes('429') || (statusCode && statusCode >= 500);
 
                 if (isRetryable && i < maxRetries - 1) {
                     const delay = Math.min(baseDelayMs * Math.pow(2, i) + Math.random() * 1000, 60000); // 最大60秒
-                    console.log(`${delay / 1000}秒後にリトライします...`);
+                    Logger.info(`${delay / 1000}秒後にリトライします... (試行 ${i + 2}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                 } else {
-                    console.error("最大リトライ回数に達したか、リトライ不可能なエラーです。");
+                    if (isRetryable) {
+                        Logger.error("最大リトライ回数に達しました。API呼び出しを中止します。");
+                    } else {
+                        Logger.error("リトライ不可能なエラーです。API呼び出しを中止します。");
+                    }
                     throw error; // 最終的なエラーをスロー
                 }
             }
@@ -81,9 +84,7 @@ class GeminiApiService {
         let modelToUse;
         // generationConfig はここで初期化し、タスクタイプに応じて設定を追加
         let generationConfig = {
-            temperature: 0.7, // デフォルトのtemperature
-            // maxOutputTokens: 8192, // 必要に応じて
-            // responseMimeType, responseSchema は generationConfigOverrides で渡される想定
+            temperature: APP_CONFIG.apiService?.defaultTemperature || 0.7, // config.jsonから取得、なければデフォルト
         };
 
         switch (taskType) {
@@ -92,18 +93,18 @@ class GeminiApiService {
             case 'keyword_extraction':
                 modelToUse = this.geminiFlash;
                 generationConfig.temperature = 0.5; // 比較的確定的な出力
-                console.log(`タスクタイプ「${taskType}」のため、Gemini Flash モデルを使用します。`);
+                Logger.info(`タスクタイプ「${taskType}」のため、モデル「${modelToUse.modelName}」を使用します。 Temperature: ${generationConfig.temperature}`);
                 break;
             case 'plot_development':
             case 'character_creation':
             case 'chapter_writing':
-            case 'code_generation': // 書籍ジェネレーターにインタラクティブ要素が含まれる場合
+            case 'code_generation':
                 modelToUse = this.geminiPro;
                 generationConfig.temperature = 0.8; // より創造的な出力
-                console.log(`タスクタイプ「${taskType}」のため、Gemini Pro モデルを使用します。`);
+                Logger.info(`タスクタイプ「${taskType}」のため、モデル「${modelToUse.modelName}」を使用します。 Temperature: ${generationConfig.temperature}`);
                 break;
             default:
-                console.warn(`未定義のタスクタイプ: ${taskType}。デフォルトでGemini Flash モデルを使用します。`);
+                Logger.warn(`未定義のタスクタイプ: ${taskType}。デフォルトでモデル「${this.geminiFlash.modelName}」を使用します。`);
                 modelToUse = this.geminiFlash;
                 generationConfig.temperature = 0.6;
                 break;
@@ -111,18 +112,20 @@ class GeminiApiService {
 
         // 呼び出し側からの generationConfigOverrides で設定を上書き
         generationConfig = { ...generationConfig, ...generationConfigOverrides };
+        Logger.debug("最終的なGenerationConfig:", generationConfig);
 
         const apiCall = async () => {
-            // 構造化出力の場合のスキーマチェック
             if (generationConfig.responseMimeType === "application/json" && !generationConfig.responseSchema) {
+                Logger.error("JSON出力が要求されましたが、responseSchemaが提供されていません。", "Config:", generationConfig);
                 throw new Error("JSON出力を要求する場合、responseSchemaの指定が必要です。");
             }
 
             const requestPayload = {
                 contents: [{ role: "user", parts: [{ text: prompt }] }],
                 generationConfig: generationConfig,
-                safetySettings: this.safetySettings // safetySettings をトップレベルに配置
+                safetySettings: this.safetySettings
             };
+            Logger.debug("Gemini APIリクエストペイロード:", JSON.stringify(requestPayload, null, 2).substring(0, 500) + "..."); // 長いプロンプトを考慮
 
             const result = await modelToUse.generateContent(requestPayload);
 
@@ -133,57 +136,45 @@ class GeminiApiService {
 
             // デバッグログ追加
             // console.log("[DEBUG] Full API Result:", JSON.stringify(result, null, 2));
-            // console.log("[DEBUG] API Response object:", JSON.stringify(response, null, 2));
-
+            // console.log("[DEBUG] API Response object:", JSON.stringify(response, null, 2)); // これはデバッグ時のみ有効化
 
             if (!response) {
-                console.error("APIからのレスポンスオブジェクト(result.response)がありませんでした。", result);
-                throw new Error("APIからの有効なレスポンスオブジェクト(result.response)がありません。");
+                Logger.error("APIからのレスポンスオブジェクト(result.response)が取得できませんでした。", "Full result:", result);
+                throw new Error("APIからの有効なレスポンスオブジェクト(result.response)が取得できませんでした。");
             }
 
             // 安全性フィードバックの確認
-            // response.promptFeedback が存在するかまず確認
             if (response.promptFeedback && response.promptFeedback.blockReason) {
-                console.error(`プロンプトがブロックされました: ${response.promptFeedback.blockReason}`, response.promptFeedback);
+                Logger.error(`プロンプトがブロックされました。理由: ${response.promptFeedback.blockReason}`, "詳細:", response.promptFeedback);
                 throw new Error(`プロンプトが安全性設定によりブロックされました: ${response.promptFeedback.blockReason}`);
             }
-            // response.candidates が存在し、空でなく、最初の要素に finishReason があるか確認
             if (response.candidates && response.candidates.length > 0 && response.candidates[0].finishReason === 'SAFETY') {
-                 console.error(`生成コンテンツがブロックされました: SAFETY`);
+                 Logger.error(`生成コンテンツが安全性によりブロックされました。`);
                  const safetyRatings = response.candidates[0].safetyRatings;
-                 console.error('Safety Ratings:', safetyRatings);
-                throw new Error(`生成されたコンテンツが安全性設定によりブロックされました。`);
+                 Logger.warn('Safety Ratings:', safetyRatings); // 警告レベルでレーティング詳細を出力
+                throw new Error(`生成されたコンテンツが安全性設定によりブロックされました。Finish reason: SAFETY`);
             }
 
-            // response.text() がメソッドとして存在するか確認
             if (typeof response.text !== 'function') {
-                console.error("[ERROR] response.text is not a function. Response object:", JSON.stringify(response, null, 2));
-                // コンテンツが別の場所にある可能性も考慮 (例: response.candidates[0].content.parts[0].text)
-                if (response.candidates && response.candidates.length > 0 && response.candidates[0].content && response.candidates[0].content.parts && response.candidates[0].content.parts.length > 0 && response.candidates[0].content.parts[0].text) {
-                    console.warn("[WARN] Trying to get text from response.candidates[0].content.parts[0].text");
-                    const fallbackText = response.candidates[0].content.parts[0].text;
-                    if (generationConfig.responseMimeType === "application/json") {
-                        try {
-                            return JSON.parse(fallbackText);
-                        } catch (e) {
-                            console.error("JSONのパースに失敗しました (フォールバックテキスト):", fallbackText);
-                            throw new Error("AIからのJSONレスポンスのパースに失敗しました (フォールバックテキスト)。");
-                        }
-                    }
-                    return fallbackText;
-                }
-                throw new Error("response.text is not a function and no fallback text found.");
+                Logger.error("response.text が関数ではありません。", "Response object:", JSON.stringify(response, null, 2));
+                // フォールバック処理は複雑化を避けるため一旦削除。text()がない場合はエラーとする。
+                throw new Error("APIレスポンスの形式が不正です: response.text が関数ではありません。");
             }
 
             const textContent = response.text();
-            console.log("[DEBUG] Text content from response.text():", typeof textContent, textContent === undefined ? "undefined" : textContent === null ? "null" : `"${textContent ? textContent.substring(0,100) + "..." : ""}"`);
+            Logger.debug("[DEBUG] Text content from response.text():", typeof textContent, textContent === undefined ? "undefined" : textContent === null ? "null" : `"${textContent ? textContent.substring(0,100) + "..." : ""}"`);
+            if (textContent === undefined || textContent === null) {
+                 Logger.warn("APIから返された textContent が undefined または null でした。空文字列として扱います。");
+                 // 空文字列を返すことで、呼び出し元でのエラーを防ぎ、本文なしとして処理できるようにする
+                 return generationConfig.responseMimeType === "application/json" ? "{}" : "";
+            }
 
 
             if (generationConfig.responseMimeType === "application/json") {
                 try {
                     return JSON.parse(textContent);
                 } catch (e) {
-                    console.error("JSONのパースに失敗しました:", textContent);
+                    Logger.error("JSONのパースに失敗しました。", "元のテキスト:", textContent, "エラー:", e.message);
                     throw new Error("AIからのJSONレスポンスのパースに失敗しました。");
                 }
             }
@@ -196,22 +187,28 @@ class GeminiApiService {
 
 module.exports = GeminiApiService;
 
-// 使用例 (テスト用)
+// 使用例 (テスト用) - Loggerを使うように変更
 async function testApiService() {
-    if (!API_KEY) {
-        console.log("テストスキップ: GEMINI_API_KEYが未設定です。");
+    if (!process.env.GEMINI_API_KEY) { // 環境変数から直接確認
+        Logger.info("テストスキップ: GEMINI_API_KEYが未設定です。");
         return;
     }
-    console.log("GeminiApiService のテストを開始します...");
-    const service = new GeminiApiService();
+    Logger.info("GeminiApiService のテストを開始します...");
+    let service;
+    try {
+        service = new GeminiApiService();
+    } catch (e) {
+        Logger.error("テスト用サービス初期化失敗:", e.message);
+        return;
+    }
 
     try {
-        console.log("\n--- Flashモデルテスト (タイトル提案) ---");
+        Logger.info("\n--- Flashモデルテスト (タイトル提案) ---");
         const titlePrompt = "AIと人間の協調に関するノンフィクション書籍のタイトルを3つ提案してください。";
         const titles = await service.generateBookContent(titlePrompt, 'title_suggestion');
-        console.log("生成されたタイトル:", titles);
+        Logger.info("生成されたタイトル:", titles);
 
-        console.log("\n--- Proモデルテスト (章の概要、JSON出力) ---");
+        Logger.info("\n--- Proモデルテスト (章の概要、JSON出力) ---");
         const chapterPrompt = "「AI倫理の未来」というテーマの書籍の第一章の概要を生成してください。章タイトル、短い要約、主要な議論ポイント3つをJSON形式で出力してください。";
         const chapterSchema = {
             type: "OBJECT",
@@ -227,17 +224,25 @@ async function testApiService() {
             responseSchema: chapterSchema,
             temperature: 0.7
         });
-        console.log("生成された章の概要 (JSON):", chapterOutline);
-        if (typeof chapterOutline === 'object') {
-            console.log("パース成功。タイトル:", chapterOutline.chapter_title);
+        Logger.info("生成された章の概要 (JSON):", chapterOutline);
+        if (typeof chapterOutline === 'object' && chapterOutline !== null) {
+            Logger.info("パース成功。タイトル:", chapterOutline.chapter_title);
+        } else {
+            Logger.warn("章の概要がオブジェクトとして正しくパースされませんでした。");
         }
 
     } catch (error) {
-        console.error("ApiServiceテスト中にエラーが発生しました:", error.message);
+        Logger.error("ApiServiceテスト中にエラーが発生しました:", error.message);
+        Logger.debug("テストエラー詳細:", error);
     }
 }
 
 // このファイルが直接実行された場合のみテストを実行
 if (require.main === module) {
+    // グローバルなAPP_CONFIGのダミー設定 (gemini-api-service.jsが直接config.jsonを読まないが、
+    // APP_CONFIGを参照するコードが将来的に追加される可能性を考慮)
+    global.APP_CONFIG = {
+        apiService: { defaultTemperature: 0.7 }
+    };
     testApiService();
 }

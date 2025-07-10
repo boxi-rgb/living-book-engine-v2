@@ -57,17 +57,17 @@ class SimpleBookGenerator {
       return defaultSlug;
     }
 
-    // 1. wanakanaでローマ字に変換
-    let slug = wanakana.toRomaji(title, { customRomajiMapping: { '：': ':', '！': '!', '？': '?' } });
+    // 1. wanakanaでローマ字に変換 (IMEModeを有効に)
+    let slug = wanakana.toRomaji(title, { IMEMode: true });
 
     // 2. 小文字化
     slug = slug.toLowerCase();
 
-    // 3. 英数字、ハイフン、スペース以外のものをハイフンに置換
-    slug = slug.replace(/[^a-z0-9\s-]/g, '-');
+    // 3. 英数字以外の文字をすべてハイフンに置換 (スペースも含む)
+    slug = slug.replace(/[^a-z0-9]/g, '-');
 
-    // 4. 連続するスペースやハイフンを単一のハイフンに
-    slug = slug.replace(/\s+/g, '-').replace(/-+/g, '-');
+    // 4. 連続するハイフンを単一のハイフンに
+    slug = slug.replace(/-+/g, '-');
 
     // 5. 先頭と末尾のハイフンを削除
     slug = slug.replace(/^-+|-+$/g, '');

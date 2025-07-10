@@ -2,19 +2,18 @@
 require('dotenv').config();
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
-const API_KEY = process.env.GEMINI_API_KEY;
-
-if (!API_KEY) {
-    console.warn("警告: GEMINI_API_KEY 環境変数が設定されていません。書籍生成機能は動作しません。");
-    // process.exit(1); // 初期化段階で終了させるか、利用時にエラーとするか検討
-}
+// モジュールスコープのAPI_KEY定数は削除
 
 class GeminiApiService {
     constructor() {
-        if (!API_KEY) {
+        const apiKeyFromEnv = process.env.GEMINI_API_KEY;
+        if (!apiKeyFromEnv) {
+            // この警告は、モジュールロード時ではなくインスタンス化時に意味を持つ
+            console.warn("警告: GEMINI_API_KEY 環境変数が設定されていません。GeminiApiService の一部機能が動作しない可能性があります。");
             throw new Error("GEMINI_API_KEY が設定されていません。GeminiApiService を初期化できません。");
         }
-        this.genAI = new GoogleGenerativeAI(API_KEY);
+        this.apiKey = apiKeyFromEnv;
+        this.genAI = new GoogleGenerativeAI(this.apiKey);
         // モデル名を2.5系に修正
         this.geminiPro = this.genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
         this.geminiFlash = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });

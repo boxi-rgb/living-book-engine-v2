@@ -13,7 +13,7 @@
     "setup": "npm install && pip3 install -r requirements.txt",
     "lint": "eslint . --ext .js,.ts,.vue",
     "format": "prettier --write .",
-    "test": "echo \"Test suite not yet implemented\" && exit 1"
+    "test": "tape test/**/*.test.js"
   },
   "keywords": [
     "vitepress",
@@ -45,6 +45,7 @@
     "@types/node": "^20.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
+    "tape": "^5.9.0",
     "typescript": "^5.0.0"
   },
   "engines": {

@@ -212,6 +212,12 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 # 通知設定（オプション）
 DISCORD_WEBHOOK=your_webhook_url
+
+# デバッグログの有効化 (開発者向け)
+# より詳細な動作ログ（APIリクエスト内容、中間的な生成結果など）を確認したい場合は、
+# 以下の環境変数を設定してスクリプトを実行してください。
+# DEBUG_MODE=true
+# 例: DEBUG_MODE=true node simple-book-generator.js self-help
 ```
 
 ## 🚨 トラブルシューティング

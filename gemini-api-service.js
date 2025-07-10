@@ -4,7 +4,8 @@ const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@googl
 const Logger = require('./logger'); // Loggerをインポート
 
 class GeminiApiService {
-    constructor() {
+    constructor(appConfig = {}) { // appConfig を引数で受け取る
+        this.appConfig = appConfig; // インスタンスプロパティとして保持
         const apiKeyFromEnv = process.env.GEMINI_API_KEY;
         if (!apiKeyFromEnv) {
             Logger.warn("GEMINI_API_KEY 環境変数が設定されていません。GeminiApiService の一部機能が動作しない可能性があります。");
@@ -12,9 +13,13 @@ class GeminiApiService {
         }
         this.apiKey = apiKeyFromEnv;
         this.genAI = new GoogleGenerativeAI(this.apiKey);
-        // モデル名を2.5系に修正
-        this.geminiPro = this.genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-        this.geminiFlash = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const proModelName = "gemini-2.5-pro";
+        const flashModelName = "gemini-2.5-flash";
+        this.geminiPro = this.genAI.getGenerativeModel({ model: proModelName });
+        this.geminiPro.modelName = proModelName; // モデル名をインスタンスに保持
+        this.geminiFlash = this.genAI.getGenerativeModel({ model: flashModelName });
+        this.geminiFlash.modelName = flashModelName; // モデル名をインスタンスに保持
 
         // 安全性設定の例 (レポートには詳細なかったが、一般的に必要)
         this.safetySettings = [
@@ -84,7 +89,7 @@ class GeminiApiService {
         let modelToUse;
         // generationConfig はここで初期化し、タスクタイプに応じて設定を追加
         let generationConfig = {
-            temperature: APP_CONFIG.apiService?.defaultTemperature || 0.7, // config.jsonから取得、なければデフォルト
+            temperature: this.appConfig.apiService?.defaultTemperature || 0.7, // this.appConfigから取得
         };
 
         switch (taskType) {

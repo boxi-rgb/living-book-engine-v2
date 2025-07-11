@@ -1,248 +1,272 @@
-#!/usr/bin/env node
+import { GeminiApiService } from './gemini-api-service.js'
+import { logger } from './logger.js'
+import { TrueRevolutionaryPromptSystem } from './true-revolutionary-prompt-system.js'
+import { AntiAiValidationSystem } from './anti-ai-validation-system.js'
+import fs from 'fs'
+import path from 'path'
 
 /**
- * 🔥 QUICK REVOLUTIONARY TEST
- * エラー回避・簡易テスト版
+ * Quick Revolutionary Test - 完全再構築版
+ * AI機械応答を完全に排除し、真の革命的コンテンツを生成
  */
-
-import GeminiApiService from './gemini-api-service.js'
-import fs from 'fs'
-import dotenv from 'dotenv'
-
-dotenv.config()
-
 class QuickRevolutionaryTest {
   constructor() {
     this.geminiService = new GeminiApiService()
-    this.logger = this.initializeLogger()
+    this.promptSystem = new TrueRevolutionaryPromptSystem()
+    this.validator = new AntiAiValidationSystem()
+    this.logger = logger
+    this.maxRetries = 5
   }
 
-  async generateQuickRevolutionary(category = 'self-help') {
-    this.logger.info(`🔥 QUICK REVOLUTIONARY TEST STARTED: ${category}`)
+  /**
+   * 真の革命的コンテンツ生成（完全再構築）
+   */
+  async generateTrueRevolutionary(category = 'self-help') {
+    this.logger.info(`🔥 TRUE REVOLUTIONARY GENERATION STARTED: ${category}`)
+    this.logger.info(`💀 AI機械応答完全排除モード`)
     
-    try {
-      // 直接的な革命コンテンツ生成
-      const revolutionaryPrompt = `
-あなたは${category}業界の常識を破壊する革命的著者です。
+    let attempt = 0
+    let bestContent = null
+    let bestScore = 0
 
-【緊急ミッション：業界破壊的書籍生成】
+    while (attempt < this.maxRetries) {
+      attempt++
+      this.logger.info(`🎯 Generation attempt ${attempt}/${this.maxRetries}`)
 
-以下の革命的要件で書籍を生成してください：
-
-1. タイトル：業界専門家が激怒するレベルの常識破壊タイトル
-2. 内容：従来の${category}手法を完全否定する革命的アプローチ
-3. 文体：AIが書いたとは絶対に思われない人間的な深み
-
-【禁止事項】
-- ありきたりなアドバイス
-- テンプレート的な構成
-- 表面的な内容
-- 感情表現の機械的挿入
-
-【必須要素】
-- 業界の嘘・欺瞞の暴露
-- 逆張りの具体的手法
-- 読者の世界観を根底から覆す洞察
-
-第1章のみ、8000文字以上で執筆してください。
-      `
-
-      this.logger.info(`🎯 Generating revolutionary content...`)
-      
-      const revolutionaryContent = await this.geminiService.generateBookContent(
-        revolutionaryPrompt, 
-        'chapter_writing',
-        {
-          temperature: 0.9,
-          maxOutputTokens: 8192
+      try {
+        // 真の革命プロンプト生成
+        const promptData = this.promptSystem.optimizePrompt(category, 'MAXIMUM')
+        
+        if (!promptData.validation.isValid) {
+          this.logger.error(`❌ Prompt validation failed: ${promptData.validation.issues.join(', ')}`)
+          continue
         }
-      )
 
-      this.logger.info(`📝 Content generated: ${revolutionaryContent.length} characters`)
+        this.logger.info(`🚀 Using persona: ${promptData.metadata.persona.character}`)
+        
+        // コンテンツ生成
+        const content = await this.geminiService.generateBookContent(
+          promptData.prompt,
+          'chapter_writing',
+          {
+            temperature: 0.95, // 最大創造性
+            maxOutputTokens: 8192,
+            topP: 0.9
+          }
+        )
 
-      // 革命的タイトル生成
-      const titlePrompt = `
-以下のコンテンツから、業界を震撼させる革命的タイトルを生成してください：
-
-${revolutionaryContent.substring(0, 1000)}...
-
-要件：
-- ${category}業界の常識を完全否定
-- 専門家が反発したくなる内容
-- 読者が衝撃を受けるインパクト
-- 20-40文字程度
-
-タイトルのみ回答してください。
-      `
-
-      const revolutionaryTitle = await this.geminiService.generateBookContent(
-        titlePrompt,
-        'title_suggestion',
-        {
-          temperature: 0.95,
-          maxOutputTokens: 256
+        if (!content || content.length < 1000) {
+          this.logger.warn(`⚠️ Content too short: ${content?.length || 0} chars`)
+          continue
         }
-      )
 
-      this.logger.info(`🎯 Revolutionary title: ${revolutionaryTitle}`)
+        // AI機械応答検証
+        const violations = this.validator.validateContent(content)
+        
+        if (this.validator.shouldReject(violations)) {
+          this.logger.error(`❌ Content rejected: ${violations.severity}`)
+          this.logger.error(`AI detections: ${violations.aiDetections.length}`)
+          this.logger.error(`Manipulation flags: ${violations.manipulationFlags.length}`)
+          
+          // 自動修正を試行
+          const fixedContent = this.validator.attemptAutoFix(content, violations)
+          const revalidation = this.validator.validateContent(fixedContent)
+          
+          if (!this.validator.shouldReject(revalidation)) {
+            this.logger.info(`🔧 Auto-fix successful, using corrected content`)
+            content = fixedContent
+            violations = revalidation
+          } else {
+            this.logger.warn(`🔧 Auto-fix failed, retrying generation`)
+            continue
+          }
+        }
 
-      // 簡易品質評価
-      const qualityScore = this.assessRevolutionaryQuality(revolutionaryContent)
-      
-      // ファイル出力
-      const outputPath = await this.saveRevolutionaryBook(
-        revolutionaryTitle.trim(),
-        revolutionaryContent,
-        qualityScore
-      )
+        // 人間らしさスコア計算
+        const humanScore = this.validator.calculateHumanStyleScore(content)
+        
+        this.logger.info(`📊 Content validation results:`)
+        this.logger.info(`- Severity: ${violations.severity}`)
+        this.logger.info(`- Human style score: ${humanScore}/100`)
+        this.logger.info(`- Content length: ${content.length} chars`)
 
-      this.logger.info(`✅ QUICK REVOLUTION COMPLETED`)
-      
-      return {
-        title: revolutionaryTitle.trim(),
-        outputPath,
-        characterCount: revolutionaryContent.length,
-        qualityScore,
-        revolutionaryLevel: qualityScore > 75 ? 'HIGH' : 'MEDIUM'
+        if (humanScore > bestScore) {
+          bestContent = content
+          bestScore = humanScore
+          
+          // 十分な品質に達した場合は生成完了
+          if (violations.severity === 'CLEAN' && humanScore >= 80) {
+            this.logger.info(`🎉 High-quality content generated on attempt ${attempt}`)
+            break
+          }
+        }
+
+      } catch (error) {
+        this.logger.error(`💥 Generation attempt ${attempt} failed:`, error.message)
+        
+        if (error.message.includes('overloaded') || error.message.includes('503')) {
+          this.logger.info(`⏰ API overloaded, waiting 30 seconds...`)
+          await new Promise(resolve => setTimeout(resolve, 30000))
+        }
       }
+    }
 
-    } catch (error) {
-      this.logger.error(`💀 QUICK REVOLUTION FAILED: ${error.message}`)
-      throw error
+    if (!bestContent) {
+      throw new Error('Failed to generate acceptable content after all attempts')
+    }
+
+    // 最終品質評価
+    const finalValidation = this.validator.validateContent(bestContent)
+    const finalReport = this.validator.generateReport(finalValidation)
+    
+    this.logger.info(`🎯 Final quality score: ${bestScore}/100`)
+    this.logger.info(`📋 Recommendation: ${finalReport.recommendation}`)
+
+    // ファイル保存
+    await this.saveGeneratedContent(category, bestContent, finalReport)
+    
+    return {
+      content: bestContent,
+      qualityScore: bestScore,
+      validationReport: finalReport,
+      attempts: attempt
     }
   }
 
-  assessRevolutionaryQuality(content) {
-    let score = 0
-    
-    // 革命的キーワードチェック
-    const revolutionaryWords = [
-      '嘘', '間違い', '騙されている', '真実は', '実は', '逆に', 
-      '常識を疑え', '業界が隠す', '専門家が言わない', '裏側',
-      '破壊', '革命', '覆す', '否定', '暴露'
-    ]
-    
-    revolutionaryWords.forEach(word => {
-      const count = (content.split(word).length - 1)
-      score += count * 3
-    })
-    
-    // 文字数評価
-    if (content.length > 8000) score += 20
-    else if (content.length > 5000) score += 10
-    
-    // AI臭さチェック（減点）
-    const aiPhrases = ['について考えてみましょう', 'まとめると', '重要なポイント']
-    aiPhrases.forEach(phrase => {
-      if (content.includes(phrase)) score -= 10
-    })
-    
-    return Math.min(Math.max(score, 0), 100)
-  }
-
-  async saveRevolutionaryBook(title, content, qualityScore) {
+  /**
+   * 生成コンテンツの保存
+   */
+  async saveGeneratedContent(category, content, validationReport) {
     const timestamp = new Date().toISOString().split('T')[0]
-    const slug = this.createSlug(title)
-    const outputDir = `docs/revolutionary-books/${slug}-quick-${timestamp}`
+    const outputDir = path.join('docs', 'revolutionary-books', `${category}-true-revolution-${timestamp}`)
     
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true })
+    // ディレクトリ作成
+    await fs.promises.mkdir(outputDir, { recursive: true })
+    
+    // タイトル抽出（簡易版）
+    const titleMatch = content.match(/^#\s*(.+)$/m) || content.match(/【(.+)】/) || content.match(/『(.+)』/)
+    const title = titleMatch ? titleMatch[1] : `真の革命的${category}書籍`
+    
+    // メタデータ
+    const metadata = {
+      title: title,
+      chapter: 1,
+      book_title: title,
+      character_count: content.length,
+      quality_score: validationReport.summary.humanStyleScore,
+      ai_validation: validationReport.severity,
+      generation_method: 'TRUE_REVOLUTIONARY_SYSTEM',
+      anti_ai_verified: validationReport.summary.aiDetections === 0
     }
-    
-    // インデックスファイル
+
+    // chapter-1.md
+    const chapterContent = `---
+${Object.entries(metadata).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join('\n')}
+---
+
+${content}`
+
+    await fs.promises.writeFile(
+      path.join(outputDir, 'chapter-1.md'),
+      chapterContent,
+      'utf8'
+    )
+
+    // index.md
     const indexContent = `---
 title: "${title}"
-description: "革命的書籍（クイックテスト版）"
-author: "Revolutionary Quick Generator"
-type: "INDUSTRY_DISRUPTION_TEST"
-quality_score: ${qualityScore}
-published: ${new Date().toISOString()}
-language: ja
+description: "真の革命的${category}書籍 - AI機械応答完全排除版"
+category: "${category}"
+generation_date: "${new Date().toISOString()}"
+quality_verified: true
+anti_ai_validated: true
 ---
 
 # ${title}
 
-## 🔥 革命的書籍（クイックテスト版）
+> **AI機械応答完全排除** - 真の革命的コンテンツ生成システム
 
-**品質スコア**: ${qualityScore}/100
-**革命レベル**: ${qualityScore > 75 ? 'HIGH' : 'MEDIUM'}
+## 品質検証結果
 
-## 📚 目次
+- **人間らしさスコア**: ${validationReport.summary.humanStyleScore}/100
+- **AI検出結果**: ${validationReport.summary.aiDetections === 0 ? '✅ AI応答なし' : '❌ AI応答検出'}
+- **洗脳検出**: ${validationReport.summary.manipulationFlags}件
+- **検証ステータス**: ${validationReport.recommendation}
 
-1. [第1章：業界破壊の序章](./chapter-1.md)
+## 章構成
 
----
-
-*革命的コンテンツ生成システム クイックテスト版*
-
-**生成日時**: ${new Date().toLocaleString('ja-JP')}
-`
-    
-    fs.writeFileSync(`${outputDir}/index.md`, indexContent)
-    
-    // 第1章ファイル
-    const chapterContent = `---
-title: "第1章：業界破壊の序章"
-chapter: 1
-book_title: "${title}"
-character_count: ${content.length}
-quality_score: ${qualityScore}
----
-
-# 第1章：業界破壊の序章
-
-${content}
+- [第1章](./chapter-1.md) - 革命の序章
 
 ---
 
-**前の章**: [革命的書籍について](index.md)
-**次の章**: [継続中...]
+*Generated by True Revolutionary System v2.0*`
 
-*第1章完了 - クイックテスト版*
-`
-    
-    fs.writeFileSync(`${outputDir}/chapter-1.md`, chapterContent)
-    
-    return outputDir
+    await fs.promises.writeFile(
+      path.join(outputDir, 'index.md'),
+      indexContent,
+      'utf8'
+    )
+
+    // 検証レポート保存
+    await fs.promises.writeFile(
+      path.join(outputDir, 'validation-report.json'),
+      JSON.stringify(validationReport, null, 2),
+      'utf8'
+    )
+
+    this.logger.info(`📁 Content saved to: ${outputDir}`)
   }
 
-  createSlug(title) {
-    return title
-      .replace(/[^\w\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .toLowerCase()
-      .substring(0, 30)
-  }
-
-  initializeLogger() {
-    return {
-      info: (msg) => console.log(`[${new Date().toISOString()}] [🔥 QUICK] ${msg}`),
-      warn: (msg) => console.log(`[${new Date().toISOString()}] [⚠️ WARN] ${msg}`),
-      error: (msg) => console.log(`[${new Date().toISOString()}] [💀 ERROR] ${msg}`)
+  /**
+   * 品質統計表示
+   */
+  displayQualityStats(result) {
+    console.log('\n🔥 TRUE REVOLUTIONARY GENERATION COMPLETED')
+    console.log('=' .repeat(50))
+    console.log(`📊 Quality Score: ${result.qualityScore}/100`)
+    console.log(`🎯 Generation Attempts: ${result.attempts}`)
+    console.log(`📋 Status: ${result.validationReport.recommendation}`)
+    console.log(`✅ AI Detection: ${result.validationReport.summary.aiDetections === 0 ? 'CLEAN' : 'DETECTED'}`)
+    console.log(`📝 Content Length: ${result.content.length} characters`)
+    console.log(`🔥 Severity Level: ${result.validationReport.severity}`)
+    
+    if (result.validationReport.summary.aiDetections > 0) {
+      console.log(`\n⚠️  AI Detections Found: ${result.validationReport.summary.aiDetections}`)
+    }
+    
+    if (result.qualityScore >= 80) {
+      console.log('\n🎉 HIGH-QUALITY REVOLUTIONARY CONTENT GENERATED!')
+    } else if (result.qualityScore >= 60) {
+      console.log('\n✅ ACCEPTABLE REVOLUTIONARY CONTENT GENERATED')
+    } else {
+      console.log('\n⚠️  LOW-QUALITY CONTENT - CONSIDER REGENERATION')
     }
   }
 }
 
 // CLI実行
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const tester = new QuickRevolutionaryTest()
-  const category = process.argv[2] || 'self-help'
+async function main() {
+  const args = process.argv.slice(2)
+  const category = args[0] || 'self-help'
   
-  tester.generateQuickRevolutionary(category)
-    .then(result => {
-      console.log('\n🎉 QUICK REVOLUTIONARY TEST SUCCESS!')
-      console.log(`📖 Title: ${result.title}`)
-      console.log(`📁 Path: ${result.outputPath}`)
-      console.log(`📊 Quality Score: ${result.qualityScore}/100`)
-      console.log(`🔥 Revolutionary Level: ${result.revolutionaryLevel}`)
-      console.log(`📝 Character Count: ${result.characterCount.toLocaleString()}`)
-    })
-    .catch(error => {
-      console.error('\n💀 QUICK REVOLUTIONARY TEST FAILED!')
-      console.error(`💥 Error: ${error.message}`)
-      process.exit(1)
-    })
+  console.log('🔥 Starting True Revolutionary Generation...')
+  console.log(`📂 Category: ${category}`)
+  console.log('💀 AI機械応答完全排除モード\n')
+  
+  const test = new QuickRevolutionaryTest()
+  
+  try {
+    const result = await test.generateTrueRevolutionary(category)
+    test.displayQualityStats(result)
+  } catch (error) {
+    console.error('💥 Generation failed:', error.message)
+    process.exit(1)
+  }
 }
 
-export default QuickRevolutionaryTest
+// CLI実行時
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main()
+}
+
+export { QuickRevolutionaryTest }

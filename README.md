@@ -1,270 +1,214 @@
-# 🚀 Living Book Engine v2 × KDP自動化システム
+# 🔥 Living Book Engine v2 - Revolutionary Content Generation System
 
-> **革新的出版プラットフォーム** - AI技術とコミュニティの力で「生きた本」を創造
+> **Industry-Disrupting AI Publishing Platform** - Revolutionary content that challenges conventional publishing wisdom
 
-## 🎯 プロジェクト概要
+[![Revolutionary Quality Gate](https://github.com/boxi-rgb/living-book-engine-v2/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/boxi-rgb/living-book-engine-v2/actions/workflows/quality-gate.yml)
+[![GitHub release](https://img.shields.io/github/v/release/boxi-rgb/living-book-engine-v2)](https://github.com/boxi-rgb/living-book-engine-v2/releases)
+[![Revolutionary Standard](https://img.shields.io/badge/Revolutionary%20Score-95%2B-red.svg)](./SOW_REVOLUTIONARY_SYSTEM.md)
 
-Living Book Engine v2は、**AIと読者の共創による自己進化出版プラットフォーム**です。従来の「一度きりの製品リリース」から、**コミュニティ駆動で継続的に成長するサービス**へと出版概念を変革します。
+## 🎯 Project Overview
 
-### 🌟 二つの革新的機能
+Living Book Engine v2 is a **Revolutionary Content Generation System** that fundamentally disrupts traditional publishing industry conventions. Unlike conventional content platforms, this system is designed to generate cognitively dissonant, paradigm-shifting content that forces readers to question industry dogma and transform their worldview.
 
-#### 1. 🤝 コミュニティ駆動型出版（GEMINIエンジン）
-- **コストゼロ**: 高価なAPIに依存しない持続可能な運営
-- **読者共創**: IssueやPRを通じた直接的な品質向上
-- **透明性**: 全変更履歴の公開とトレーサビリティ
+### 🔥 Revolutionary Principles
 
-#### 2. 🤖 AI自動出版システム（Claudeエンジン）
-- **1日1冊**: 超高速AI執筆→KDP出版パイプライン
-- **品質保証**: 多段階AI+コミュニティレビュー
-- **ブルーオーシャン戦略**: データドリブンなニッチ市場開拓
+- **Industry Convention Destruction**: Systematic negation of established publishing practices
+- **Cognitive Dissonance Generation**: Intentional reader discomfort for transformation
+- **Contrarian Truth Construction**: Revolutionary perspective development
+- **Human-Indistinguishable Output**: Advanced AI detection prevention
+- **Expert Backlash Generation**: Professional criticism as success validation
 
-## 🏗️ ハイブリッドシステム構成
+## ⚡ Revolutionary System Architecture
 
 ```
-コミュニティ貢献 ──┐
-                  ├─→ Living Book Engine ─→ 品質管理 ─→ 出版
-AI自動生成 ────────┘        ↓                ↓        ↓
-                        VitePress      GitHub     KDP/Web
+Industry Analysis ──→ Contrarian Engine ──→ Revolutionary Content ──→ KDP Publishing
+       ↓                    ↓                      ↓                    ↓
+  Consensus ID         Truth Construction     Quality Validation    Market Disruption
 ```
 
-## 🚀 クイックスタート
+### 🎯 Core Components
 
-### 1. 環境セットアップ
+- **`revolutionary-content-engine.js`**: Industry consensus analysis and destruction algorithms
+- **`revolutionary-book-generator.js`**: Complete automated book generation orchestration
+- **`quick-revolutionary-test.js`**: Rapid testing and validation framework
+- **`gemini-api-service.js`**: AI service with dynamic model selection (2.5-pro/flash)
+
+## 🚀 Quick Start
+
+### 1. Environment Setup
 ```bash
-# リポジトリクローン
+# Clone the revolutionary repository
 git clone https://github.com/boxi-rgb/living-book-engine-v2.git
 cd living-book-engine-v2
 
-# 依存関係インストール
+# Install dependencies
 npm install
 
-# 開発サーバー起動
-npm run dev
+# Set up environment variables
+echo "GEMINI_API_KEY=your_api_key_here" > .env
 ```
 
-### 2. コミュニティ参加
-1. **[Issues](https://github.com/boxi-rgb/living-book-engine-v2/issues/new/choose)**: 誤字脱字報告、改善提案、新トピック提案
-2. **[Pull Request](https://github.com/boxi-rgb/living-book-engine-v2/compare)**: 直接的な改善貢献
-3. **品質向上**: Markdown Lintによる自動品質チェック
-
-### 3. AI自動出版システム
-
-`simple-book-generator.js` スクリプトは、Google の Gemini API (1.5 Pro および 1.5 Flash モデル) を利用して、書籍のタイトル、章構成、各章の本文を動的に生成します。
-実行には、プロジェクトルートに `.env` ファイルを作成し、有効な `GEMINI_API_KEY` を設定する必要があります。詳細は「環境変数」セクションを参照してください。
-
+### 2. Revolutionary Content Generation
 ```bash
-# AI書籍生成 (Gemini API利用)
-# 例: node simple-book-generator.js self-help  (自己啓発カテゴリの書籍を1冊生成)
-# 例: node simple-book-generator.js all         (定義済み全カテゴリの書籍を生成)
-npm run generate-daily-book # (内部的に node simple-book-generator.js all を実行想定)
+# Quick revolutionary test (recommended for first use)
+npm run quick-revolution
 
-# KDP変換
-npm run convert-to-kdp
+# Industry-specific destruction modes
+npm run destroy-selfhelp     # Self-help industry complete destruction
+npm run destroy-business     # Business convention annihilation
+npm run destroy-tech         # Technology trend contrarian analysis
 
-# 全自動実行
-npm run full-automation
+# Full revolutionary book generation
+npm run revolution
 ```
 
-## 📁 プロジェクト構造
-
-```
-📦 living-book-engine-v2/
-├── 🤖 AI自動化システム/
-│   ├── simple-book-generator.js      # AI書籍生成 (Gemini API連携、動的コンテンツ生成)
-│   ├── gemini-api-service.js       # Gemini APIとの通信サービスクラス
-│   ├── quick-kdp-converter.py        # EPUB変換（実証済み）
-│   ├── automation-scheduler.js       # 自動化スケジューラー
-│   └── docs/generated-books/         # AIにより生成された書籍が格納されるディレクトリ
-│
-├── 🤝 コミュニティシステム/
-│   ├── .github/ISSUE_TEMPLATE/       # Issue テンプレート
-│   ├── .github/workflows/            # CI/CD & Deploy
-│   ├── .markdownlint.jsonc          # 品質管理設定
-│   └── docs/.vitepress/              # サイト設定
-│
-├── 📚 コンテンツ/
-│   ├── KDP_BlueOcean_Strategy.md     # 戦略文書
-│   ├── COLLABORATION.md              # AI協業ログ
-│   └── FINAL_DELIVERABLE.md          # 成果報告書
-│
-└── 🔧 設定ファイル/
-    ├── package.json                  # 統合設定
-    ├── requirements.txt              # Python依存関係
-    └── .env.example                  # 環境変数テンプレート
+### 3. Quality Validation
+```bash
+# Code quality gates
+npm run lint                 # ESLint enforcement
+npm run format              # Prettier formatting
+npm run quality-gate        # Complete validation pipeline
 ```
 
-## 🎨 特徴とメリット
+## 📊 Revolutionary Quality Standards
 
-### 💰 経済性
-- **ゼロコスト運営**: GitHub/Vercel無料枠活用
-- **収益化可能**: KDP自動出版による収益生成
-- **持続可能性**: コミュニティ貢献とAI効率化の両立
+The system enforces **5-dimensional revolutionary scoring** with minimum thresholds:
 
-### 🔄 持続性
-- **自己進化**: 読者貢献による継続的改善
-- **自動化**: AI技術による効率的なコンテンツ生成
-- **品質保証**: ダブルチェックシステム（AI+人的）
+| Dimension | Target | Description |
+|-----------|--------|-------------|
+| **Paradigm Destruction** | 90+/100 | Industry convention breaking effectiveness |
+| **Cognitive Dissonance** | 85+/100 | Reader discomfort and questioning generation |
+| **Industry Differentiation** | 95+/100 | Uniqueness from conventional approaches |
+| **Truth Excavation Depth** | 92+/100 | Non-obvious insight discovery |
+| **Transformational Catalyst** | 88+/100 | Reader worldview change potential |
 
-### 🌍 拡張性
-- **多言語対応**: コミュニティ翻訳+AI翻訳
-- **複数フォーマット**: Web/EPUB/PDF対応
-- **API化**: 将来的な外部システム連携
+## 🎮 Usage Examples
 
-## 📊 実証済み成果
+### Basic Revolutionary Generation
+```bash
+# Generate revolutionary self-help content
+npm run quick-revolution self-help
 
-### 🏆 完成した書籍（3冊）
-1. **『AI時代のセルフブランディング術』** (Self-Help)
-2. **『スタートアップ成功の5つの法則』** (Business)  
-3. **『AI活用で変わる働き方革命』** (Technology)
+# Business industry disruption
+npm run quick-revolution business
 
-各書籍：
-- ✅ **EPUB形式**: KDP準拠（約12KB）
-- ✅ **5章構成**: 体系的な学習構造
-- ✅ **実用的内容**: 即座に活用可能な具体的手法
-
-### 📈 技術的成果
-- ✅ **VitePress統合**: 高品質サイト生成
-- ✅ **GitHub Actions**: 完全自動化パイプライン
-- ✅ **品質管理**: Markdown Lint + AI校正
-- ✅ **EPUB変換**: 標準準拠の変換システム
-
-## 🤝 参加方法
-
-### 読者として
-- **[バグ報告](https://github.com/boxi-rgb/living-book-engine-v2/issues/new?template=bug_report.md)**
-- **[機能要望](https://github.com/boxi-rgb/living-book-engine-v2/issues/new?template=feature_request.md)**
-- **内容改善PR**: 誤字修正、内容追加、翻訳など
-
-### 開発者として
-- **AI システム改善**: 執筆品質向上、変換精度向上
-- **UI/UX改善**: サイトデザイン、ユーザビリティ向上
-- **新機能開発**: API開発、分析機能、モバイル対応
-
-## 🔧 高度な設定
-
-### AI自動化設定
-```javascript
-// 書籍生成カスタマイズ (将来的な拡張のための参考情報)
-// 現在の simple-book-generator.js では、カテゴリはスクリプト内で定義されており (self-help, business, technology)、
-// 文字数や品質基準、言語といった下記設定は直接利用されていません。
-// 書籍の章数（現在は5章固定）や、より詳細な生成パラメータは simple-book-generator.js および
-// gemini-api-service.js 内のプロンプトやロジックで制御されています。
-// 主要な設定はプロジェクトルートの `config.json` ファイルで行います。
-const config = {
-  categories: ['self-help', 'business', 'technology'], // config.jsonで定義・カスタマイズ可能
-  targetLength: 50000,  // 文字数 (現在参照されていません)
-  qualityThreshold: 8,  // 品質基準（1-10）(現在参照されていません)
-  languages: ['ja', 'en'] // (現在参照されていません。主に日本語で生成)
-}
+# Technology contrarian analysis
+npm run quick-revolution technology
 ```
 
-simple-book-generator.js は、内部的にGemini ProモデルとFlashモデルをタスク（書籍概要の生成、章本文の執筆など）に応じて使い分けています。ユーザーが直接モデルを指定する機能は現在のバージョンでは提供されていません。モデルの種類は `config.json` 内の `apiService` セクションで確認できます（現時点ではスクリプト内で直接参照はしていませんが、将来的な拡張のため）。
+### Advanced Revolutionary Operations
+```bash
+# Full book with maximum industry destruction
+npm run destroy-selfhelp
 
-### `config.json` による設定
+# Automated daily revolutionary content
+npm run revolution -- --schedule
 
-書籍生成の挙動は、プロジェクトルートにある `config.json` ファイルで詳細にカスタマイズできます。主な設定項目は以下の通りです。
-
-*   `outputDir`: (オプション) 生成された書籍が格納されるディレクトリパス。デフォルトは `./docs/generated-books`。
-*   `defaultNumChapters`: 生成される書籍のデフォルトの章数。
-*   `categories`: 書籍カテゴリごとの設定。
-    *   各カテゴリキー（例: `"self-help"`）に対して、以下の情報を設定します。
-        *   `instruction`: そのカテゴリの書籍を生成する際のAIへの指示内容。
-        *   `defaultTitle`: （現在未使用）AIがタイトル生成に失敗した場合などのフォールバック用。
-    *   新しいカテゴリを追加する場合は、この `categories` オブジェクトに新しいキーと対応する `instruction` を追加してください。
-*   `slugGeneration`: ファイルシステムで安全なディレクトリ名を生成する際のオプション。
-    *   `maxLength`: 生成されるスラッグ（書籍タイトルから変換された部分）の最大長。
-    *   `defaultSlug`: タイトルから有効なスラッグが生成できなかった場合のデフォルト値。
-*   `apiService`: (将来的な参照用) AIモデルに関する設定。
-    *   `proModel`: 使用する高性能モデル名。
-    *   `flashModel`: 使用する高速・軽量モデル名。
-    *   `defaultTemperature`: AI生成時のデフォルトの温度設定。
-
-例: `config.json` の一部
-```json
-{
-  "defaultNumChapters": 3,
-  "categories": {
-    "my-new-category": {
-      "instruction": "私の新しいカスタムカテゴリに関する書籍のアイデア。",
-      "defaultTitle": "カスタム書籍"
-    },
-    // ... 他のカテゴリ設定 ...
-  },
-  "slugGeneration": {
-    "maxLength": 35,
-    "defaultSlug": "custom-untitled"
-  }
-  // ...
-}
-```
-このファイルを編集することで、コードを直接変更することなく、書籍生成の様々な側面を調整できます。
-
-### 環境変数
-```env
-# AI API Keys（オプション - 高度な機能用）
-OPENAI_API_KEY=your_key_here
-ANTHROPIC_API_KEY=your_key_here
-# Google Gemini API Key (書籍生成に必要)
-# Google AI Studio (https://aistudio.google.com/) でキーを取得し、
-# プロジェクトルートに .env ファイルを作成して以下のように設定してください:
-# GEMINI_API_KEY=YOUR_API_KEY_HERE
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# 通知設定（オプション）
-DISCORD_WEBHOOK=your_webhook_url
-
-# デバッグログの有効化 (開発者向け)
-# より詳細な動作ログ（APIリクエスト内容、中間的な生成結果など）を確認したい場合は、
-# 以下の環境変数を設定してスクリプトを実行してください。
-# DEBUG_MODE=true
-# 例: DEBUG_MODE=true node simple-book-generator.js self-help
+# Quality assessment and validation
+npm run quality-gate
 ```
 
-## 🚨 トラブルシューティング
+## 🔧 Configuration
 
-### よくある問題
-1. **Python環境**: `pip3 install -r requirements.txt`
-2. **Node.js**: `npm install` または `npm run setup`
-3. **権限エラー**: GitHubアクセストークン設定確認
+### Environment Variables
+```bash
+GEMINI_API_KEY=your_google_gemini_api_key
+DEBUG_MODE=false                              # Enable detailed logging
+REVOLUTIONARY_INTENSITY=MAXIMUM               # Quality threshold enforcement
+```
 
-### サポート
-- **[GitHub Issues](https://github.com/boxi-rgb/living-book-engine-v2/issues)**
-- **[Discussions](https://github.com/boxi-rgb/living-book-engine-v2/discussions)**
+### Revolutionary Categories
+The system supports industry-specific disruption in:
+- **Self-Help**: Personal development conventional wisdom destruction
+- **Business**: Corporate methodology and success dogma negation
+- **Technology**: Innovation hype cycle and trend contrarian analysis
 
-## 🔮 ロードマップ
+## 📈 GitHub Integration Features
 
-### Phase 1 ✅ (完了)
-- [x] コミュニティシステム基盤
-- [x] AI執筆システム実証
-- [x] KDP変換機能完成
-- [x] 3冊の書籍完成
+### Automated Workflows
+- **Daily Revolutionary Generation**: Scheduled content creation at 6 AM UTC
+- **Quality Gate Enforcement**: Automatic validation on every push
+- **Manual Workflow Dispatch**: On-demand revolutionary content generation
 
-### Phase 2 🔄 (進行中)
-- [ ] Webサイトデプロイ
-- [ ] コミュニティ参加促進
-- [ ] 品質向上システム
-- [ ] 多言語対応準備
+### Issue Tracking
+- [🔥 Revolutionary System Quality Optimization](https://github.com/boxi-rgb/living-book-engine-v2/issues/4)
+- [📊 Revolutionary Content Quality Metrics Dashboard](https://github.com/boxi-rgb/living-book-engine-v2/issues/5)
+- [⚡ GitHub Actions Revolutionary Automation Pipeline](https://github.com/boxi-rgb/living-book-engine-v2/issues/6)
 
-### Phase 3 🎯 (計画中)
-- [ ] API公開
-- [ ] 収益分配システム
-- [ ] モバイルアプリ
-- [ ] AI音声読み上げ
+### Release Management
+- **v2.0.0**: Revolutionary System Launch with industry disruption capabilities
+- **Semantic Versioning**: Based on revolutionary feature impact and quality improvements
 
-## 📜 ライセンス
+## 💻 Development Workflow
 
-**MIT License** - オープンソースで誰でも利用・改変可能
+### Adding New Revolutionary Categories
+1. Update `config.json` with category-specific parameters
+2. Define revolutionary targets and industry consensus points
+3. Test with `npm run quick-revolution [category]`
+4. Validate quality scores meet revolutionary standards
 
-## 🏅 クレジット
+### Contributing Revolutionary Improvements
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/revolutionary-enhancement`
+3. Implement changes with revolutionary quality standards
+4. Test thoroughly: `npm run quality-gate`
+5. Submit pull request with revolutionary impact description
 
-**開発**: Claude AI + GEMINI AI 協業プロジェクト  
-**コンセプト**: 読者共創型・自己進化出版の実現  
-**目標**: 出版業界のデモクラタイゼーション
+## ⚠️ Revolutionary Impact Warning
+
+**This system is designed to generate content that will provoke industry expert criticism and challenge conventional publishing wisdom.**
+
+- **Professional Backlash Expected**: Expert resistance validates revolutionary success
+- **Reader Worldview Disruption**: Intentional cognitive dissonance generation
+- **Industry Convention Challenge**: Systematic negation of established practices
+- **Market Differentiation**: Complete departure from template-based content
+
+## 📚 Documentation
+
+- **[SOW_REVOLUTIONARY_SYSTEM.md](./SOW_REVOLUTIONARY_SYSTEM.md)**: Complete project specification
+- **[CLAUDE.md](./CLAUDE.md)**: Development guidelines and architecture overview
+- **[REVOLUTION_HANDOVER.md](./REVOLUTION_HANDOVER.md)**: Implementation handover documentation
+
+## 🎯 Success Metrics
+
+### Quantitative Indicators
+- **95%+ Generation Success Rate**: Without manual intervention
+- **90+ Revolutionary Quality Score**: Consistent achievement
+- **<5 Minutes Generation Time**: For 5-chapter books
+- **Zero Template Pollution**: Complete elimination of placeholder content
+
+### Qualitative Validation
+- **Industry Expert Criticism**: Professional backlash generation
+- **Reader Transformation Reports**: Worldview change testimonials
+- **Market Differentiation**: Uniqueness verification
+- **Authenticity Assessment**: Human indistinguishability confirmation
+
+## 🤝 Community & Support
+
+### GitHub Features
+- **Issues**: Bug reports and feature requests for revolutionary enhancements
+- **Discussions**: Strategic revolutionary content development conversations
+- **Actions**: Automated quality gates and content generation workflows
+- **Releases**: Version management with revolutionary impact metrics
+
+### Revolutionary Philosophy
+This project challenges the fundamental assumptions of the publishing industry by:
+- Questioning the value of conventional wisdom reinforcement
+- Promoting cognitive dissonance as a tool for transformation
+- Systematically opposing established industry practices
+- Generating content that experts will find uncomfortable
+
+## 📄 License
+
+MIT License - Use this revolutionary system to disrupt any industry conventions you encounter.
+
+## 🚨 Disclaimer
+
+The Revolutionary Content Generation System is designed to challenge conventional wisdom and may generate content that contradicts established industry practices. Professional criticism and expert backlash are intended features that validate the system's revolutionary effectiveness.
 
 ---
 
-*🌟 一緒に出版の未来を創造しましょう！*
+**Revolutionary Classification**: MAXIMUM THREAT TO CONVENTIONAL PUBLISHING  
+**Generated**: 2025-07-11 | **Version**: 2.0.0 | **Status**: INDUSTRY DISRUPTION READY
 
-**Living Book Engine v2 - Where Books Come Alive**
-
-# Last Updated: 2025-06-29 04:36:00 JST
+🤖 Enhanced with [Claude Code](https://claude.ai/code)

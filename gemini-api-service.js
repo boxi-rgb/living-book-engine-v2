@@ -1,7 +1,9 @@
 // gemini-api-service.js
-require('dotenv').config();
-const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
-const Logger = require('./logger'); // Loggerをインポート
+import dotenv from 'dotenv';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+import Logger from './logger.js'; // Loggerをインポート
+
+dotenv.config();
 
 class GeminiApiService {
     constructor(appConfig = {}) { // appConfig を引数で受け取る
@@ -190,7 +192,7 @@ class GeminiApiService {
     }
 }
 
-module.exports = GeminiApiService;
+export default GeminiApiService;
 
 // 使用例 (テスト用) - Loggerを使うように変更
 async function testApiService() {
@@ -243,7 +245,7 @@ async function testApiService() {
 }
 
 // このファイルが直接実行された場合のみテストを実行
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
     // グローバルなAPP_CONFIGのダミー設定 (gemini-api-service.jsが直接config.jsonを読まないが、
     // APP_CONFIGを参照するコードが将来的に追加される可能性を考慮)
     global.APP_CONFIG = {

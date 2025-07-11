@@ -1,1 +1,27 @@
-{"outputDir":"./docs/generated-books","defaultNumChapters":5,"categories":{},"slugGeneration":{"maxLength":40,"defaultSlug":"untitled-book"},"apiService":{"proModel":"gemini-2.5-pro","flashModel":"gemini-2.5-flash","defaultTemperature":0.7}}
+{
+  "outputDir": "./docs/generated-books",
+  "defaultNumChapters": 5,
+  "categories": {
+    "self-help": {
+      "instruction": "自己啓発・自己改善に関する実用的な書籍を生成してください。各章は最低5,000文字以上で、読者が日常生活で実践できる具体的な手法、詳細な事例、ステップバイステップガイド、実践演習を含めた濃密な内容にしてください。表面的な内容ではなく、深い洞察と実用的価値を提供してください。",
+      "defaultTitle": "自己啓発書籍"
+    },
+    "business": {
+      "instruction": "ビジネス・経営・起業に関する実用的な書籍を生成してください。各章は最低5,000文字以上で、現代のビジネス環境に適用できる戦略、詳細なケーススタディ、実践的フレームワーク、具体的な実装方法を含めた内容にしてください。理論だけでなく、即座に適用できる実践的価値を提供してください。",
+      "defaultTitle": "ビジネス書籍"
+    },
+    "technology": {
+      "instruction": "テクノロジー・AI・デジタル技術に関する書籍を生成してください。各章は最低5,000文字以上で、最新の技術動向、詳細な技術解説、実装例、コードサンプル、実践的な活用法を含めた内容にしてください。技術者にとって実際に役立つ深い技術的洞察を提供してください。",
+      "defaultTitle": "テクノロジー書籍"
+    }
+  },
+  "slugGeneration": {
+    "maxLength": 40,
+    "defaultSlug": "untitled-book"
+  },
+  "apiService": {
+    "proModel": "gemini-2.5-pro",
+    "flashModel": "gemini-2.5-flash",
+    "defaultTemperature": 0.7
+  }
+}

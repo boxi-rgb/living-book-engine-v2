@@ -1,7 +1,8 @@
 {
   "name": "living-book-engine-v2",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Living Book Engine v2 × KDP自動化システム - Community-Driven Publishing Platform",
+  "type": "module",
   "main": "content-generation-pipeline.js",
   "scripts": {
     "dev": "vitepress dev docs",
@@ -11,9 +12,25 @@
     "convert-to-kdp": "python3 quick-kdp-converter.py",
     "full-automation": "npm run generate-daily-book && npm run convert-to-kdp",
     "setup": "npm install && pip3 install -r requirements.txt",
-    "lint": "eslint . --ext .js,.ts,.vue",
+    "lint": "eslint . --ext .js,.mjs --fix",
+    "lint:check": "eslint . --ext .js,.mjs",
     "format": "prettier --write .",
-    "test": "tape test/**/*.test.js"
+    "format:check": "prettier --check .",
+    "test": "node --experimental-loader ./test/loader.mjs tape test/**/*.test.js",
+    "test:coverage": "c8 npm test",
+    "quality-gate": "npm run lint:check && npm run format:check && npm test && npm run build",
+    "pre-commit": "npm run quality-gate",
+    "god-automation": "node GOD_AUTOMATION.js",
+    "god-schedule": "node GOD_AUTOMATION.js --schedule",
+    "divine-will": "npm run god-automation",
+    "ultimate-book": "node ultimate-book-generator.js",
+    "revolution": "node revolutionary-book-generator.js",
+    "destroy-selfhelp": "node revolutionary-book-generator.js self-help ANNIHILATION",
+    "destroy-business": "node revolutionary-book-generator.js business ANNIHILATION", 
+    "destroy-tech": "node revolutionary-book-generator.js technology ANNIHILATION",
+    "industry-disruption": "node revolutionary-book-generator.js self-help DISRUPTION",
+    "quick-revolution": "node quick-revolutionary-test.js",
+    "quick-destroy": "node quick-revolutionary-test.js self-help"
   },
   "keywords": [
     "vitepress",
